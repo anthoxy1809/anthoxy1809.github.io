@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F3D3E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Keuangan">
+<title>Catatan Keuangan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF3F1; --surface:#FFFFFF; --ink:#13302F; --muted:#5F7776; --line:#D5E1DE;
+  --hero:#0F3D3E; --on-hero:#F2F8F6; --on-hero-soft:#A9C9C5; --neg:#FF5C5C;
+  --accent:#E0A72E; --on-accent:#2A1F00; --danger:#B5483A; --chip:#E3ECEA; --income:#1E7A52;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1818; --surface:#132928; --ink:#E6F0EE; --muted:#8FAAA7; --line:#244240;
+    --hero:#174B49; --on-hero:#F2F8F6; --on-hero-soft:#9CC2BE; --neg:#FF5C5C;
+    --accent:#E8B340; --on-accent:#2A1F00; --danger:#E27A6B; --chip:#1D3837; --income:#6FD1A0;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1818; --surface:#132928; --ink:#E6F0EE; --muted:#8FAAA7; --line:#244240;
+  --hero:#174B49; --on-hero:#F2F8F6; --on-hero-soft:#9CC2BE; --neg:#FF5C5C;
+  --accent:#E8B340; --on-accent:#2A1F00; --danger:#E27A6B; --chip:#1D3837; --income:#6FD1A0;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:14px; line-height:1.4; min-height:100vh;
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#app{max-width:520px;margin:0 auto;padding:16px 16px 140px}
+
+.monthbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.monthbar h1{margin:0;font-size:1rem;font-weight:600;text-align:center}
+.iconbtn{width:40px;height:40px;flex:none;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:1.2rem;line-height:1}
+.iconbtn:disabled{opacity:.35;cursor:default}
+
+.hero{background:var(--hero);color:var(--on-hero);border-radius:18px;padding:14px 16px 12px}
+.hero .lbl{color:var(--on-hero-soft);font-size:.8rem}
+.hero .big{font-size:1.9rem;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin:2px 0 4px;word-break:break-word}
+.hero .big.negative{color:var(--neg)}
+.hero .note{color:var(--on-hero-soft);font-size:.78rem;margin-bottom:6px}
+.hero .row{display:flex;gap:14px;border-top:1px solid rgba(255,255,255,.18);padding-top:8px;margin-top:8px}
+.hero .row div{flex:1;min-width:0}
+.hero .row b{display:block;font-size:.95rem;font-weight:600;word-break:break-word}
+
+h2{font-size:.92rem;font-weight:600;margin:18px 0 8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 12px}
+
+.cat{display:block;width:100%;text-align:left;background:none;border:0;padding:8px 0;color:inherit}
+.cat .track,.cat .fill{display:block}
+.cat + .cat{border-top:1px solid var(--line)}
+.cat .top{display:flex;justify-content:space-between;gap:8px;font-size:.88rem}
+.cat .top span:last-child{font-weight:600;white-space:nowrap}
+.cat .track{height:6px;border-radius:99px;background:var(--chip);margin-top:6px;overflow:hidden}
+.cat .fill{height:100%;border-radius:99px}
+.cat small{color:var(--muted)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+
+.day{margin-top:14px}
+.day .head{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:.8rem;margin:0 4px 5px}
+.day .head span:last-child{text-align:right}
+.day .head span:last-child b{white-space:nowrap;font-weight:inherit}
+.item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;padding:8px 0;min-height:44px}
+.item + .item{border-top:1px solid var(--line)}
+.item .dot{margin:0;flex:none}
+.item .txt{flex:1;min-width:0}
+.item .txt b{display:block;font-weight:600}
+.item .txt span{display:block;color:var(--muted);font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .amt{font-weight:600;white-space:nowrap}
+.item .amt.inc{color:var(--income)}
+
+.empty{padding:28px 8px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--ink);margin-bottom:4px}
+
+.tools{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.ghost{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 12px;min-height:40px;font-size:.85rem}
+.ghost.danger{color:var(--danger);border-color:var(--danger)}
+#csvbox{display:none;margin-top:12px}
+#csvbox p{margin:0 0 6px;color:var(--muted);font-size:.9rem}
+#csvbox textarea{width:100%;height:140px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:10px;font-family:ui-monospace,Menlo,monospace;font-size:.8rem}
+
+.fabbar{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));pointer-events:none;display:flex;justify-content:center}
+.fab{pointer-events:auto;background:var(--accent);color:var(--on-accent);border:0;border-radius:99px;padding:0 22px;height:48px;font-weight:800;font-size:.95rem;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+
+.overlay{position:fixed;inset:0;background:rgba(5,15,15,.55);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.overlay.open{display:flex}
+.sheet{width:100%;max-width:520px;background:var(--surface);border-radius:20px 20px 0 0;padding:14px 16px 0;max-height:92vh;max-height:92dvh;overflow-y:auto}
+.sheet h3{margin:0 0 10px;font-size:1rem}
+.seg{display:flex;gap:4px;background:var(--chip);border-radius:14px;padding:4px;margin-bottom:10px}
+.seg button{flex:1;height:34px;border:0;border-radius:11px;background:none;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--hero);color:var(--on-hero)}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:4px}
+.field input{width:100%;height:40px;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:0 14px}
+.hint{color:var(--muted);font-size:.8rem;margin:6px 0 0}
+.amountwrap{position:relative}
+.amountwrap span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:600}
+.amountwrap input{padding-left:42px;font-size:1.2rem;font-weight:800}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--chip);border-radius:99px;padding:0 10px;height:30px;font-size:.8rem;display:inline-flex;align-items:center}
+.chip .dot{width:8px;height:8px;margin-right:5px}
+.chip[aria-pressed="true"]{background:var(--hero);color:var(--on-hero);border-color:var(--hero)}
+.chip.add{background:none;border-style:dashed}
+#newCatRow{display:none;gap:8px;margin-top:10px}
+#newCatRow input{flex:1;height:44px;min-width:0}
+#newCatRow button{height:44px;border:0;border-radius:12px;padding:0 16px;font-weight:600;background:var(--accent);color:var(--on-accent)}
+.err{color:var(--danger);font-size:.82rem;min-height:1.1em;margin:0 0 4px}
+.actions{display:flex;gap:10px;position:sticky;bottom:0;z-index:1;background:var(--surface);border-top:1px solid var(--line);padding:8px 0 calc(10px + env(safe-area-inset-bottom,0px));margin-top:6px}
+.btn{flex:1;height:42px;border-radius:14px;border:0;font-weight:800}
+.btn.primary{background:var(--hero);color:var(--on-hero)}
+.btn.secondary{background:var(--chip)}
+.btn.danger{background:none;border:1px solid var(--danger);color:var(--danger);flex:none;padding:0 16px}
+
+.crow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0}
+.crow + .crow{border-top:1px solid var(--line)}
+.cname{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cname small{color:var(--muted);margin-left:4px}
+.cbtns{display:flex;gap:6px;flex:none}
+.cbtns button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;height:36px;padding:0 12px}
+.cbtns button.del{border-color:var(--danger);color:var(--danger)}
+.cedit{padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:4px 0}
+.cedit .einput{width:100%;height:46px;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:0 12px}
+.swatches{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.sw{width:30px;height:30px;border-radius:50%;border:2px solid transparent;padding:0}
+.sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface) inset}
+.addrow{display:flex;gap:8px;margin-top:8px}
+.addrow input{flex:1;min-width:0;height:42px;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:0 12px}
+.addrow button{height:42px;border:0;border-radius:12px;padding:0 14px;font-weight:600;background:var(--accent);color:var(--on-accent)}
+#dTitle{display:flex;align-items:center;margin:0 0 2px}
+.dtotal{font-size:1.6rem;font-weight:800;letter-spacing:-.02em;margin:6px 0 2px;word-break:break-word}
+.hrow{padding:8px 0}
+.hrow .top{display:flex;justify-content:space-between;gap:8px;font-size:.92rem}
+.hrow.now .top span:first-child{font-weight:600}
+.hrow .track{height:8px;border-radius:99px;background:var(--chip);margin-top:5px;overflow:hidden}
+.hrow .fill{height:100%;border-radius:99px}
+.sub{font-size:.82rem;color:var(--muted);margin:10px 0 4px}
+#hList{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.hbubble{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:54px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 14px;text-align:left}
+.hbubble .htxt{display:block;min-width:0}
+.hbubble b{display:block;font-weight:600}
+.hbubble small{display:block;color:var(--muted);font-size:.8rem}
+.hbubble .chev{font-size:1.5rem;color:var(--muted);line-height:1}
+.hhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hhead h3{margin:0}
+.sheet.tall{min-height:85vh}
+.range{display:flex;gap:10px}
+.range .field{flex:1;min-width:0;margin-bottom:10px}
+#hDates{margin-bottom:10px}
+.toolsgroup{margin-top:28px}
+.toolsgroup h2{margin:0 0 6px}
+.toolsgroup .tools{margin-top:10px}
+#backupInfo,#storeInfo{margin:0 0 2px;color:var(--muted);font-size:.8rem}
+.warn{background:var(--chip);border:1px solid var(--danger);color:var(--danger);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:.9rem}
+#bkbox{display:none;margin-top:12px}
+#bkbox p{margin:0 0 6px;color:var(--muted);font-size:.9rem}
+#bkbox textarea,#rText{width:100%;height:150px;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:10px;font-family:ui-monospace,Menlo,monospace;font-size:.8rem;color:var(--ink)}
+.field input[type="file"]{height:auto;padding:12px 14px}
+
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:.92rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:60;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+html.locked #app,html.locked .fabbar,html.locked .overlay,html.locked .toast{display:none!important}
+.lock{position:fixed;inset:0;z-index:50;background:var(--bg);display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+html.locked .lock{display:flex}
+.lockbox{width:100%;max-width:340px}
+.lockbox h1{font-size:1.2rem;margin:0 0 4px}
+.lockbox .btn{width:100%;flex:none;margin-top:4px}
+.linkbtn{display:block;width:100%;background:none;border:0;color:var(--muted);text-decoration:underline;padding:10px 0;font-size:.85rem;text-align:center}
+.linkbtn.danger{color:var(--danger)}
+.overlay.top{z-index:40}
+.code{font-family:ui-monospace,Menlo,monospace;font-size:1.1rem;font-weight:700;letter-spacing:.06em;text-align:center;background:var(--bg);border:1px dashed var(--accent);border-radius:12px;padding:14px 8px;margin:8px 0;word-break:break-all;user-select:all}
+.check{display:flex;align-items:center;gap:8px;margin:10px 0 4px;font-size:.88rem}
+.check input{width:20px;height:20px;flex:none}
+a.ghost{display:inline-flex;align-items:center;text-decoration:none;color:inherit}
+.ghost.danger{color:var(--danger);border-color:var(--danger)}
+.sugs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.sugrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px}
+.sugrow span{color:var(--muted);font-size:.78rem}
+.chip.sm{height:26px;font-size:.76rem;padding:0 8px}
+.chip.sm small{margin-left:4px;color:var(--muted)}
+.simbox{display:none;background:var(--chip);border:1px solid var(--accent);border-radius:12px;padding:8px 10px;margin-bottom:6px;font-size:.85rem}
+.simbox .sbtns{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.simbox button{border:1px solid var(--line);background:var(--surface);border-radius:10px;height:34px;padding:0 10px}
+.simgroup{background:var(--chip);border-radius:12px;padding:8px 10px;margin:6px 0;display:flex;flex-direction:column;align-items:flex-start;gap:6px;font-size:.85rem}
+.simgroup small{color:var(--muted)}
+.secbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.msg{font-size:.82rem;min-height:1.1em;margin:6px 0 0}
+.msg.bad{color:var(--danger)}
+.msg.ok{color:var(--income)}
+.hero .row b.neg{color:var(--neg)}
+.tip{display:none;flex-direction:column;gap:8px;background:var(--chip);border:1px solid var(--accent);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:.85rem}
+.tipbtns{display:flex;gap:8px;flex-wrap:wrap}
+.tipbtns button{height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:0 12px}
+.tipbtns button.go{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600}
+.credit{text-align:center;color:var(--muted);font-size:.75rem;margin:22px 0 4px}
+</style>
+<script>try{if(localStorage.getItem("pengeluaran:auth:v1"))document.documentElement.className+=" locked";}catch(e){}</script>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+<div class="lock" id="lock" role="dialog" aria-modal="true" aria-labelledby="lockTitle">
+  <div class="lockbox">
+    <h1 id="lockTitle">Catatan Keuangan</h1>
+    <div id="lockMain">
+      <p class="hint" style="margin:0 0 12px">Masukkan password untuk membuka.</p>
+      <div class="field"><label for="lkPass">Password</label><input id="lkPass" type="password" autocomplete="current-password"></div>
+      <p class="err" id="lkErr" role="alert"></p>
+      <button type="button" class="btn primary" id="lkOpen">Buka</button>
+      <button type="button" class="linkbtn" id="lkForgot">Lupa password?</button>
+    </div>
+    <div id="lockReset" style="display:none">
+      <p class="hint" style="margin:0 0 12px">Masukkan kode pemulihan yang kamu simpan saat mengaktifkan kunci, lalu buat password baru.</p>
+      <div class="field"><label for="rcCode">Kode pemulihan</label><input id="rcCode" autocomplete="off" autocapitalize="characters" placeholder="XXXX-XXXX-XXXX-XXXX"></div>
+      <div class="field"><label for="rcNew">Password baru (minimal 6 karakter)</label><input id="rcNew" type="password" autocomplete="new-password"></div>
+      <div class="field"><label for="rcNew2">Ulangi password baru</label><input id="rcNew2" type="password" autocomplete="new-password"></div>
+      <p class="err" id="rcErr" role="alert"></p>
+      <button type="button" class="btn primary" id="rcGo">Atur ulang password</button>
+      <button type="button" class="linkbtn" id="rcBack">Kembali</button>
+      <button type="button" class="linkbtn danger" id="rcWipe">Tidak punya kode? Hapus data dan atur ulang</button>
+    </div>
+    <p class="credit">Created by Anthox</p>
+  </div>
+</div>
+<main id="app">
+  <div class="warn" id="storeWarn" style="display:none" role="alert">Penyimpanan browser tidak aktif di tampilan ini, jadi data akan hilang saat halaman ditutup. Buka link aplikasi di Chrome, lalu cadangkan datanya.</div>
+  <div class="tip" id="lockTip">
+    <span>Aplikasi ini belum dikunci password di perangkat ini. Aktifkan supaya orang lain tidak bisa membukanya.</span>
+    <div class="tipbtns"><button type="button" class="go" id="tipGo">Aktifkan password</button><button type="button" id="tipLater">Nanti</button></div>
+  </div>
+  <div class="monthbar">
+    <button class="iconbtn" id="prev" aria-label="Periode sebelumnya">‹</button>
+    <h1 id="periodLabel"></h1>
+    <button class="iconbtn" id="next" aria-label="Periode berikutnya">›</button>
+  </div>
+
+  <section class="hero" aria-label="Ringkasan periode">
+    <div class="lbl">Sisa periode ini</div>
+    <div class="big" id="net">Rp 0</div>
+    <div class="note" id="periodNote"></div>
+    <div class="row">
+      <div><span class="lbl">Pemasukan</span><b id="inc">Rp 0</b></div>
+      <div><span class="lbl">Pengeluaran</span><b id="exp">Rp 0</b></div>
+    </div>
+    <div class="row">
+      <div><span class="lbl">Keluar hari ini</span><b id="today">Rp 0</b></div>
+      <div><span class="lbl">Rata-rata keluar/hari</span><b id="avg">Rp 0</b></div>
+    </div>
+  </section>
+
+  <h2>Pengeluaran per kategori</h2>
+  <div class="card" id="catsOut"></div>
+
+  <div id="inWrap" style="display:none">
+    <h2>Pemasukan per kategori</h2>
+    <div class="card" id="catsIn"></div>
+  </div>
+
+  <h2>Riwayat</h2>
+  <button type="button" class="hbubble" id="histBtn">
+    <span class="htxt"><b>Lihat riwayat transaksi</b><small id="histSub"></small></span>
+    <span class="chev" aria-hidden="true">›</span>
+  </button>
+  <button type="button" class="ghost" id="pdfBtn" style="margin-top:8px;width:100%">Unduh laporan PDF periode ini</button>
+
+  <div class="toolsgroup">
+    <h2>Cadangan dan pemulihan</h2>
+    <p id="storeInfo"></p>
+    <p id="backupInfo"></p>
+    <div class="tools">
+      <button class="ghost" id="bkFileBtn">Cadangkan ke file</button>
+      <button class="ghost" id="bkCopyBtn">Salin teks cadangan</button>
+      <button class="ghost" id="restoreBtn">Pulihkan data</button>
+    </div>
+    <div id="bkbox">
+      <p id="bkMsg"></p>
+      <textarea id="bkText" readonly></textarea>
+    </div>
+  </div>
+
+  <div class="tools">
+    <button class="ghost" id="setBtn">Pengaturan periode dan kategori</button>
+    <button class="ghost" id="lockBtn">Password dan keamanan</button>
+    <button class="ghost" id="lockNowBtn" style="display:none">Kunci sekarang</button>
+    <button class="ghost" id="csvBtn">Salin data sebagai CSV</button>
+    <button class="ghost danger" id="wipeBtn">Hapus semua data</button>
+  </div>
+  <div id="csvbox">
+    <p>Salin teks di bawah, lalu tempel ke Google Sheets atau catatan.</p>
+    <textarea id="csvText" readonly></textarea>
+  </div>
+<p class="credit">Created by Anthox</p>
+</main>
+
+<div class="fabbar"><button class="fab" id="addBtn">+ Catat transaksi</button></div>
+
+<div class="overlay top" id="overlay6">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rcTitle">
+    <h3 id="rcTitle">Simpan kode pemulihan</h3>
+    <p class="hint">Kode ini dipakai kalau kamu lupa password. Kode hanya ditampilkan sekali dan tidak bisa dilihat lagi. Simpan di Google Drive, Keep, atau kirim ke email milikmu sendiri.</p>
+    <div class="code" id="rcShow"></div>
+    <div class="tools" style="margin-top:6px">
+      <button type="button" class="ghost" id="rcCopy">Salin kode</button>
+      <a class="ghost" id="rcMail" href="#" rel="noopener">Kirim ke email</a>
+    </div>
+    <label class="check"><input type="checkbox" id="rcSaved"> Saya sudah menyimpan kode ini</label>
+    <div class="actions"><button type="button" class="btn primary" id="rcDone" disabled>Selesai</button></div>
+  </div>
+</div>
+<div class="overlay top" id="overlay7">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="nTitle">
+    <h3 id="nTitle"></h3>
+    <p class="hint">Nama (catatan) yang pernah kamu simpan di kategori ini. Rapikan di sini supaya tidak ada penulisan yang hampir sama.</p>
+    <div id="nSim"></div>
+    <div class="sub">Semua nama</div>
+    <div id="nList"></div>
+    <p class="err" id="nErr" role="alert"></p>
+    <div class="actions"><button type="button" class="btn secondary" id="nClose">Tutup</button></div>
+  </div>
+</div>
+<div class="overlay" id="overlay5">
+  <div class="sheet tall" role="dialog" aria-modal="true" aria-labelledby="hTitle">
+    <div class="hhead">
+      <h3 id="hTitle">Riwayat transaksi</h3>
+      <button type="button" class="ghost" id="hPdf" style="margin-left:auto;margin-right:8px;min-height:40px">PDF periode ini</button>
+      <button type="button" class="iconbtn" id="hClose" aria-label="Tutup riwayat">×</button>
+    </div>
+    <div class="chips" id="hDates">
+      <button type="button" class="chip" data-m="all" aria-pressed="true">Semua</button>
+      <button type="button" class="chip" data-m="period" aria-pressed="false">Periode ini</button>
+      <button type="button" class="chip" data-m="today" aria-pressed="false">Hari ini</button>
+      <button type="button" class="chip" data-m="7d" aria-pressed="false">7 hari</button>
+      <button type="button" class="chip" data-m="range" aria-pressed="false">Pilih tanggal</button>
+    </div>
+    <div class="range" id="hRange" style="display:none">
+      <div class="field"><label for="hFrom">Dari</label><input id="hFrom" type="date"></div>
+      <div class="field"><label for="hTo">Sampai</label><input id="hTo" type="date"></div>
+    </div>
+    <div class="seg" id="hType" role="group" aria-label="Jenis transaksi">
+      <button type="button" data-t="all" aria-pressed="true">Semua</button>
+      <button type="button" data-t="out" aria-pressed="false">Keluar</button>
+      <button type="button" data-t="in" aria-pressed="false">Masuk</button>
+    </div>
+    <div class="seg" id="hSort" role="group" aria-label="Urutan riwayat">
+      <button type="button" data-s="amt" aria-pressed="true">Nominal terbesar</button>
+      <button type="button" data-s="date" aria-pressed="false">Tanggal terbaru</button>
+    </div>
+    <p class="hint" id="hSum"></p>
+    <div id="hList"></div>
+  </div>
+</div>
+<div class="overlay" id="overlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <h3 id="sheetTitle">Catat pengeluaran</h3>
+    <div class="seg" role="group" aria-label="Jenis transaksi">
+      <button type="button" id="segOut" aria-pressed="true">Pengeluaran</button>
+      <button type="button" id="segIn" aria-pressed="false">Pemasukan</button>
+    </div>
+    <div class="field">
+      <label for="fAmount">Nominal</label>
+      <div class="amountwrap"><span>Rp</span><input id="fAmount" inputmode="numeric" autocomplete="off" placeholder="0"></div>
+    </div>
+    <div class="field">
+      <label>Kategori</label>
+      <div class="chips" id="fCats"></div>
+      <div id="newCatRow">
+        <input id="newCat" autocomplete="off" maxlength="20" placeholder="Nama kategori baru" aria-label="Nama kategori baru">
+        <button type="button" id="newCatBtn">Tambah</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="fNote">Catatan (boleh kosong)</label>
+      <input id="fNote" autocomplete="off" maxlength="80" placeholder="Misalnya: nasi goreng">
+      <div id="sugRow" class="sugrow" style="display:none"><span>Nama tersimpan, ketuk untuk memakai</span><button type="button" class="linkbtn" style="width:auto;display:inline;padding:2px 0" id="sugManage">Kelola</button></div>
+      <div class="sugs" id="nameSug"></div>
+      <div class="simbox" id="simBox" style="margin-top:8px"><span id="simTxt"></span><div class="sbtns"><button type="button" id="simUse"></button><button type="button" id="simKeep"></button></div></div>
+    </div>
+    <div class="field">
+      <label for="fDate">Tanggal</label>
+      <input id="fDate" type="date">
+    </div>
+    <p class="err" id="err" role="alert"></p>
+    <div class="actions">
+      <button class="btn danger" id="delBtn" style="display:none">Hapus</button>
+      <button class="btn secondary" id="cancelBtn">Batal</button>
+      <button class="btn primary" id="saveBtn">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay2">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <h3 id="setTitle">Pengaturan</h3>
+    <div class="field">
+      <label for="sDay">Periode mulai setiap tanggal</label>
+      <input id="sDay" type="number" inputmode="numeric" min="1" max="28">
+      <p class="hint" id="sHint"></p>
+    </div>
+    <div class="sub">Keamanan</div>
+    <div id="secBox"></div>
+    <div class="sub">Kategori (perubahan langsung tersimpan)</div>
+    <div id="sCats"></div>
+    <p class="err" id="sErr" role="alert"></p>
+    <div class="actions">
+      <button class="btn secondary" id="sClose">Tutup</button>
+      <button class="btn primary" id="sSave">Simpan tanggal</button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="overlay4">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dTitle">
+    <h3 id="dTitle"></h3>
+    <p class="hint" id="dPeriod"></p>
+    <div class="dtotal" id="dTotal"></div>
+    <p class="hint" id="dStat"></p>
+    <div class="sub">Transaksi periode ini (terbesar dulu)</div>
+    <div class="card" id="dList"></div>
+    <div class="sub">Nama tersimpan di kategori ini (semua periode)</div>
+    <div class="sugs" id="dNames"></div>
+    <button type="button" class="ghost" id="dManage" style="margin-top:8px">Kelola nama (ubah, gabung, hapus)</button>
+    <div class="sub">6 periode terakhir</div>
+    <div id="dHist"></div>
+    <div class="actions">
+      <button class="btn secondary" id="dClose">Tutup</button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="overlay3">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rTitle">
+    <h3 id="rTitle">Pulihkan data</h3>
+    <div class="field">
+      <label for="rFile">Pilih file cadangan (.json)</label>
+      <input id="rFile" type="file">
+    </div>
+    <div class="field">
+      <label for="rText">Atau tempel teks cadangan di sini</label>
+      <textarea id="rText" spellcheck="false" placeholder="Tempel teks cadangan"></textarea>
+      <p class="hint" id="rInfo"></p>
+    </div>
+    <div class="seg" role="group" aria-label="Cara memulihkan">
+      <button type="button" id="rMerge" aria-pressed="true">Gabungkan</button>
+      <button type="button" id="rReplace" aria-pressed="false">Ganti semua</button>
+    </div>
+    <p class="hint" id="rHint"></p>
+    <p class="err" id="rErr" role="alert"></p>
+    <div class="actions">
+      <button class="btn secondary" id="rCancel">Batal</button>
+      <button class="btn primary" id="rGo">Pulihkan</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" aria-live="polite"></div>
+
+<script>
+(function(){
+  var DEF_OUT = [
+    {n:"Makan",c:"#E0A72E"},{n:"Transport",c:"#2F7F79"},{n:"Belanja",c:"#B5483A"},
+    {n:"Tagihan",c:"#5B6C9E"},{n:"Kesehatan",c:"#7BA05B"},{n:"Hiburan",c:"#A06B9E"},{n:"Lainnya",c:"#8A9795"}
+  ];
+  var DEF_IN = [
+    {n:"Gaji",c:"#2F8F6B"},{n:"Bonus",c:"#C79A2E"},{n:"Usaha",c:"#3F8FBF"},
+    {n:"Hadiah",c:"#B65C8A"},{n:"Lainnya",c:"#8A9795"}
+  ];
+  var PALETTE = ["#C56B2E","#3F8FBF","#9A7A2E","#B65C8A","#4E9A6B","#6A5ACD","#C0504D","#2E8B8B"];
+  var SWATCH = ["#E0A72E","#2F7F79","#B5483A","#5B6C9E","#7BA05B","#A06B9E","#C56B2E","#3F8FBF","#B65C8A","#8A9795"];
+  var KEY = "pengeluaran:v1", SKEY = "pengeluaran:settings:v1";
+  var mem = null, memS = null;
+
+  function load(){
+    try{ var s = localStorage.getItem(KEY); if(s) return JSON.parse(s); }catch(e){}
+    return mem || [];
+  }
+  function save(){
+    mem = items;
+    try{ localStorage.setItem(KEY, JSON.stringify(items)); }catch(e){}
+  }
+  function pickCats(own, def, legacy){
+    var src = (Array.isArray(own) && own.length) ? own : def.concat(Array.isArray(legacy) ? legacy : []);
+    var a = cleanCats(src);
+    return a.length ? a : cleanCats(def);
+  }
+  function loadS(){
+    var o = null;
+    try{ var s = localStorage.getItem(SKEY); if(s) o = JSON.parse(s); }catch(e){}
+    o = o || memS || {};
+    var d = parseInt(o.startDay, 10);
+    return {
+      startDay: (d >= 1 && d <= 28) ? d : 28,
+      catsOut: pickCats(o.catsOut, DEF_OUT, o.customOut),
+      catsIn: pickCats(o.catsIn, DEF_IN, o.customIn),
+      lastBackup: (typeof o.lastBackup === "string" && /^\d{4}-\d{2}-\d{2}$/.test(o.lastBackup)) ? o.lastBackup : "",
+      histSort: o.histSort === "date" ? "date" : "amt",
+      noLockTip: o.noLockTip === true
+    };
+  }
+  function saveS(){
+    memS = S;
+    try{ localStorage.setItem(SKEY, JSON.stringify(S)); }catch(e){}
+  }
+  var items = load();
+  if(!Array.isArray(items)) items = [];
+  var S = loadS();
+  var storageOk = true;
+  try{
+    localStorage.setItem("__uji", "1");
+    if(localStorage.getItem("__uji") !== "1") storageOk = false;
+    localStorage.removeItem("__uji");
+  }catch(e){ storageOk = false; }
+
+  function $(id){ return document.getElementById(id); }
+  function pad(n){ return n<10 ? "0"+n : ""+n; }
+  function dstr(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+  function todayStr(){ return dstr(new Date()); }
+  var nf = new Intl.NumberFormat("id-ID");
+  function rp(n){ return (n<0?"\u2212":"") + "Rp " + nf.format(Math.abs(Math.round(n))); }
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+  function typeOf(it){ return it.type === "in" ? "in" : "out"; }
+
+  function catList(type){
+    return type === "in" ? S.catsIn : S.catsOut;
+  }
+  function catColor(type, name){
+    var l = catList(type);
+    for(var i=0;i<l.length;i++) if(l[i].n === name) return l[i].c;
+    return "#8A9795";
+  }
+
+  // ---- periode ----
+  function periodKey(ds){
+    var p = ds.split("-"), y = +p[0], m = +p[1], d = +p[2];
+    if(d < S.startDay){ m--; if(m < 1){ m = 12; y--; } }
+    return y + "-" + pad(m);
+  }
+  function periodRange(key){
+    var p = key.split("-"), y = +p[0], m = +p[1];
+    return [ new Date(y, m-1, S.startDay), new Date(y, m, S.startDay-1) ];
+  }
+  function rangeLabel(a, b){
+    if(S.startDay === 1) return a.toLocaleDateString("id-ID",{month:"long",year:"numeric"});
+    var o1 = {day:"numeric",month:"short"}, o2 = {day:"numeric",month:"short",year:"numeric"};
+    if(a.getFullYear() !== b.getFullYear()) o1.year = "numeric";
+    return a.toLocaleDateString("id-ID",o1) + " \u2013 " + b.toLocaleDateString("id-ID",o2);
+  }
+  var pkey = periodKey(todayStr());
+
+  function block(map, total, type){
+    var keys = Object.keys(map).sort(function(a,b){ return map[b]-map[a]; });
+    return keys.map(function(k){
+      var pct = total ? Math.round(map[k]/total*100) : 0;
+      var col = catColor(type, k);
+      return '<button type="button" class="cat" data-t="'+type+'" data-n="'+esc(k)+'"><span class="top"><span><i class="dot" style="background:'+col+'"></i>'+esc(k)+' <small>'+pct+'%</small></span><span>'+rp(map[k])+'</span></span>'+
+             '<span class="track"><span class="fill" style="width:'+Math.max(pct,2)+'%;background:'+col+'"></span></span></button>';
+    }).join("");
+  }
+
+  function render(){
+    var r = periodRange(pkey), start = r[0], end = r[1];
+    var sStr = dstr(start), eStr = dstr(end);
+    var curKey = periodKey(todayStr());
+    $("periodLabel").textContent = rangeLabel(start, end);
+    updateBackupInfo();
+    updateLockTip();
+    $("next").disabled = pkey >= curKey;
+
+    var list = items.filter(function(it){ return it.date >= sStr && it.date <= eStr; });
+    var inc = 0, exp = 0, mOut = {}, mIn = {};
+    list.forEach(function(it){
+      if(typeOf(it) === "in"){ inc += it.amount; mIn[it.cat] = (mIn[it.cat]||0) + it.amount; }
+      else { exp += it.amount; mOut[it.cat] = (mOut[it.cat]||0) + it.amount; }
+    });
+    var net = inc - exp;
+    var netEl = $("net");
+    netEl.textContent = rp(net);
+    netEl.className = "big" + (net < 0 ? " negative" : "");
+    $("exp").className = net < 0 ? "neg" : "";
+    $("inc").textContent = rp(inc);
+    $("exp").textContent = rp(exp);
+
+    var t = todayStr();
+    var todayOut = items.filter(function(it){ return it.date === t && typeOf(it) === "out"; })
+                        .reduce(function(a,b){ return a+b.amount; },0);
+    $("today").textContent = rp(todayOut);
+
+    var tn = new Date(); tn = new Date(tn.getFullYear(), tn.getMonth(), tn.getDate());
+    var totalDays = Math.round((end - start)/864e5) + 1;
+    var inCurrent = t >= sStr && t <= eStr;
+    var elapsed = inCurrent ? Math.round((tn - start)/864e5) + 1 : totalDays;
+    var left = inCurrent ? Math.round((end - tn)/864e5) : 0;
+    $("avg").textContent = rp(exp / Math.max(elapsed,1));
+    $("periodNote").textContent = inCurrent
+      ? (left > 0 ? left + " hari lagi sampai periode baru" : "Hari terakhir periode ini")
+      : "Periode ini sudah berakhir";
+
+    $("catsOut").innerHTML = Object.keys(mOut).length ? block(mOut, exp, "out")
+      : '<div class="empty">Belum ada pengeluaran di periode ini.</div>';
+    $("inWrap").style.display = Object.keys(mIn).length ? "" : "none";
+    $("catsIn").innerHTML = Object.keys(mIn).length ? block(mIn, inc, "in") : "";
+
+    $("histSub").textContent = items.length
+      ? list.length + " transaksi di periode ini" + (items.length > list.length ? " \u00b7 " + items.length + " seluruhnya" : "")
+      : "Belum ada transaksi";
+    if($("overlay5").classList.contains("open")) renderHistory();
+  }
+
+  // ---- sheet transaksi ----
+  var editId = null, eType = "out", selCat = DEF_OUT[0].n, delArmed = false, delTimer = null;
+
+  function buildChips(){
+    var list = catList(eType).slice();
+    if(selCat && !list.some(function(c){ return c.n === selCat; })) list.push({n:selCat, c:"#8A9795"});
+    $("fCats").innerHTML = list.map(function(c){
+      return '<button type="button" class="chip" data-cat="'+esc(c.n)+'" aria-pressed="'+(c.n===selCat)+'"><i class="dot" style="background:'+c.c+'"></i>'+esc(c.n)+'</button>';
+    }).join("") + '<button type="button" class="chip add" id="addCatChip">+ Kategori</button>';
+    renderSug();
+  }
+  function setType(t){
+    eType = t;
+    $("segOut").setAttribute("aria-pressed", t === "out");
+    $("segIn").setAttribute("aria-pressed", t === "in");
+    if(!catList(t).some(function(c){ return c.n === selCat; })) selCat = catList(t)[0].n;
+    $("sheetTitle").textContent = (editId ? "Ubah " : "Catat ") + (t === "in" ? "pemasukan" : "pengeluaran");
+    $("fNote").placeholder = t === "in" ? "Misalnya: gaji bulanan" : "Misalnya: nasi goreng";
+    buildChips();
+  }
+  function openSheet(id){
+    editId = id || null; delArmed = false; keepSim = null; $("simBox").style.display = "none";
+    $("delBtn").textContent = "Hapus"; $("err").textContent = "";
+    $("newCatRow").style.display = "none"; $("newCat").value = "";
+    var it = editId ? items.filter(function(x){ return x.id === editId; })[0] : null;
+    $("fAmount").value = it ? nf.format(it.amount) : "";
+    $("fNote").value = it ? (it.note||"") : "";
+    $("fDate").value = it ? it.date : todayStr();
+    selCat = it ? it.cat : catList("out")[0].n;
+    $("delBtn").style.display = it ? "" : "none";
+    setType(it ? typeOf(it) : "out");
+    if(it && !catList(eType).some(function(c){ return c.n === it.cat; })) selCat = it.cat;
+    buildChips();
+    $("overlay").classList.add("open");
+    setTimeout(function(){ $("fAmount").focus(); }, 50);
+  }
+  function closeSheet(){ $("overlay").classList.remove("open"); editId = null; }
+
+  $("segOut").addEventListener("click", function(){ setType("out"); });
+  $("segIn").addEventListener("click", function(){ setType("in"); });
+  $("fAmount").addEventListener("input", function(){
+    var raw = this.value.replace(/\D/g,"").slice(0,12);
+    this.value = raw ? nf.format(+raw) : "";
+  });
+  $("fCats").addEventListener("click", function(e){
+    var b = e.target.closest(".chip"); if(!b) return;
+    if(b.id === "addCatChip"){
+      var row = $("newCatRow");
+      row.style.display = row.style.display === "flex" ? "none" : "flex";
+      if(row.style.display === "flex") $("newCat").focus();
+      return;
+    }
+    selCat = b.getAttribute("data-cat"); buildChips();
+  });
+  function addCategory(){
+    var name = $("newCat").value.trim();
+    if(!name){ $("err").textContent = "Tulis nama kategorinya dulu."; return; }
+    var all = catList(eType);
+    for(var i=0;i<all.length;i++){
+      if(all[i].n.toLowerCase() === name.toLowerCase()){
+        selCat = all[i].n; buildChips(); $("newCatRow").style.display = "none"; $("newCat").value = ""; $("err").textContent = "";
+        toast("Kategori itu sudah ada, dipilih");
+        return;
+      }
+    }
+    var arr = catList(eType);
+    arr.push({n:name, c:SWATCH[arr.length % SWATCH.length]});
+    saveS();
+    selCat = name; $("err").textContent = "";
+    $("newCat").value = ""; $("newCatRow").style.display = "none";
+    buildChips(); toast("Kategori ditambahkan");
+  }
+  $("newCatBtn").addEventListener("click", addCategory);
+  $("newCat").addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); addCategory(); } });
+
+  $("saveBtn").addEventListener("click", function(){
+    var amount = +($("fAmount").value.replace(/\D/g,"")||0);
+    var date = $("fDate").value;
+    if(!amount){ $("err").textContent = "Isi nominal lebih dari 0."; $("fAmount").focus(); return; }
+    if(!date){ $("err").textContent = "Pilih tanggalnya dulu."; return; }
+    var note = cleanNote($("fNote").value);
+    var orig = null;
+    if(editId){ var cur0 = items.filter(function(x){ return x.id === editId; })[0]; orig = cur0 ? cur0.note : null; }
+    if(note && !(orig !== null && orig === note)){
+      note = canonicalFor(eType, selCat, note, null);
+      if(keepSim !== note){
+        var sim = findSimilar(eType, selCat, note);
+        if(sim){ showSim(note, sim); return; }
+      }
+    }
+    if(editId){
+      items.forEach(function(it){
+        if(it.id === editId){ it.type = eType; it.amount = amount; it.cat = selCat; it.note = note; it.date = date; }
+      });
+    } else {
+      items.push({id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), type:eType, amount:amount, cat:selCat, note:note, date:date});
+    }
+    save();
+    pkey = periodKey(date);
+    closeSheet(); render(); toast("Tersimpan");
+  });
+  $("cancelBtn").addEventListener("click", closeSheet);
+  $("overlay").addEventListener("click", function(e){ if(e.target === this) closeSheet(); });
+  $("delBtn").addEventListener("click", function(){
+    if(!delArmed){
+      delArmed = true; this.textContent = "Yakin? Ketuk lagi";
+      clearTimeout(delTimer);
+      delTimer = setTimeout(function(){ delArmed = false; $("delBtn").textContent = "Hapus"; }, 4000);
+      return;
+    }
+    items = items.filter(function(it){ return it.id !== editId; });
+    save(); closeSheet(); render(); toast("Dihapus");
+  });
+  $("addBtn").addEventListener("click", function(){ openSheet(); });
+  // ---- riwayat (dibuka lewat tombol) ----
+  var hMode = "all", hKind = "all";
+  function histRange(){
+    var t = todayStr();
+    if(hMode === "period"){ var r = periodRange(pkey); return [dstr(r[0]), dstr(r[1])]; }
+    if(hMode === "today") return [t, t];
+    if(hMode === "7d"){ var d = new Date(); d.setDate(d.getDate() - 6); return [dstr(d), t]; }
+    if(hMode === "range"){
+      var a = $("hFrom").value || "0000-01-01", b = $("hTo").value || "9999-12-31";
+      return a <= b ? [a, b] : [b, a];
+    }
+    return ["0000-01-01", "9999-12-31"];
+  }
+  function dayGroups(arr){
+    if(!arr.length) return '<div class="card"><div class="empty"><b>Tidak ada transaksi</b>Coba ubah pilihan tanggal atau jenis.</div></div>';
+    var t = todayStr(), days = {};
+    arr.forEach(function(it){ (days[it.date] = days[it.date] || []).push(it); });
+    return Object.keys(days).sort().reverse().map(function(d){
+      var rows = days[d].sort(function(a,b){ return b.id < a.id ? -1 : 1; });
+      var o = 0, i = 0;
+      rows.forEach(function(it){ if(typeOf(it) === "in") i += it.amount; else o += it.amount; });
+      var p = d.split("-");
+      var label = new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+      if(d === t) label = "Hari ini, " + label;
+      var sums = [];
+      if(o) sums.push("<b>\u2212" + rp(o) + "</b>");
+      if(i) sums.push("<b>+" + rp(i) + "</b>");
+      return '<div class="day"><div class="head"><span>' + esc(label) + '</span><span>' + sums.join("  ") + '</span></div><div class="card">' +
+        rows.map(function(it){
+          var ty = typeOf(it);
+          return '<button class="item" data-id="' + esc(it.id) + '"><i class="dot" style="background:' + catColor(ty, it.cat) + '"></i>' +
+            '<span class="txt"><b>' + esc(it.cat) + '</b>' + (it.note ? '<span>' + esc(it.note) + '</span>' : '') + '</span>' +
+            '<span class="amt' + (ty === "in" ? " inc" : "") + '">' + (ty === "in" ? "+" : "") + rp(it.amount) + '</span></button>';
+        }).join("") + '</div></div>';
+    }).join("");
+  }
+  function flatList(arr){
+    if(!arr.length) return '<div class="card"><div class="empty"><b>Tidak ada transaksi</b>Coba ubah pilihan tanggal atau jenis.</div></div>';
+    var rows = arr.slice().sort(function(a, b){
+      return (b.amount - a.amount) || (a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+    });
+    return '<div class="card">' + rows.map(function(it){
+      var ty = typeOf(it);
+      return '<button class="item" data-id="' + esc(it.id) + '"><i class="dot" style="background:' + catColor(ty, it.cat) + '"></i>' +
+        '<span class="txt"><b>' + esc(it.note || it.cat) + '</b><span>' + esc(it.cat) + ' \u00b7 ' + esc(fmtDate(it.date)) + '</span></span>' +
+        '<span class="amt' + (ty === "in" ? " inc" : "") + '">' + (ty === "in" ? "+" : "") + rp(it.amount) + '</span></button>';
+    }).join("") + '</div>';
+  }
+  function renderHistory(){
+    var rg = histRange(), inc = 0, exp = 0;
+    var arr = items.filter(function(it){
+      return it.date >= rg[0] && it.date <= rg[1] && (hKind === "all" || typeOf(it) === hKind);
+    });
+    arr.forEach(function(it){ if(typeOf(it) === "in") inc += it.amount; else exp += it.amount; });
+    var parts = [arr.length + " transaksi"];
+    if(hKind !== "in") parts.push("Keluar " + rp(exp));
+    if(hKind !== "out") parts.push("Masuk " + rp(inc));
+    $("hSum").textContent = parts.join(" \u00b7 ");
+    $("hList").innerHTML = S.histSort === "date" ? dayGroups(arr) : flatList(arr);
+  }
+  function openHistory(){
+    pressOnly($("hSort"), $("hSort").querySelector('[data-s="' + S.histSort + '"]'));
+    $("overlay5").classList.add("open"); renderHistory();
+  }
+  function closeHistory(){ $("overlay5").classList.remove("open"); }
+  function pressOnly(container, btn){
+    var all = container.querySelectorAll("button");
+    for(var k = 0; k < all.length; k++) all[k].setAttribute("aria-pressed", all[k] === btn);
+  }
+  $("histBtn").addEventListener("click", openHistory);
+  $("hClose").addEventListener("click", closeHistory);
+  $("overlay5").addEventListener("click", function(e){ if(e.target === this) closeHistory(); });
+  $("hDates").addEventListener("click", function(e){
+    var b = e.target.closest(".chip"); if(!b) return;
+    hMode = b.getAttribute("data-m"); pressOnly($("hDates"), b);
+    if(hMode === "range"){
+      $("hRange").style.display = "flex";
+      if(!$("hFrom").value){ var r = periodRange(pkey); $("hFrom").value = dstr(r[0]); $("hTo").value = dstr(r[1]); }
+    } else $("hRange").style.display = "none";
+    renderHistory();
+  });
+  $("hFrom").addEventListener("input", renderHistory);
+  $("hTo").addEventListener("input", renderHistory);
+  $("hType").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b) return;
+    hKind = b.getAttribute("data-t"); pressOnly($("hType"), b); renderHistory();
+  });
+  $("hSort").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b) return;
+    S.histSort = b.getAttribute("data-s"); saveS(); pressOnly($("hSort"), b); renderHistory();
+  });
+  $("hList").addEventListener("click", function(e){
+    var b = e.target.closest(".item"); if(b) openSheet(b.getAttribute("data-id"));
+  });
+
+  // ---- navigasi periode ----
+  function shift(n){
+    var p = pkey.split("-"); var d = new Date(+p[0], +p[1]-1+n, 1);
+    pkey = d.getFullYear()+"-"+pad(d.getMonth()+1); render();
+  }
+  $("prev").addEventListener("click", function(){ shift(-1); });
+  $("next").addEventListener("click", function(){ shift(1); });
+
+  // ---- pengaturan ----
+  function hintFor(d){
+    if(d === 1) return "Periode mengikuti bulan kalender, dari tanggal 1 sampai akhir bulan.";
+    return "Periode berjalan dari tanggal " + d + " sampai tanggal " + (d-1) + " bulan berikutnya.";
+  }
+  var cedit = null, cdel = null, cdelTimer = null;
+  function usageCount(type, name){
+    return items.filter(function(it){ return typeOf(it) === type && it.cat === name; }).length;
+  }
+  function nameTaken(type, name, exceptIdx){
+    return catList(type).some(function(c, i){ return i !== exceptIdx && c.n.toLowerCase() === name.toLowerCase(); });
+  }
+  function renderSetCats(){
+    function group(title, type){
+      var arr = catList(type), h = '<div class="sub">' + title + '</div>';
+      arr.forEach(function(c, i){
+        if(cedit && cedit.t === type && cedit.i === i){
+          h += '<div class="cedit"><input class="einput" id="eName" maxlength="20" value="' + esc(c.n) + '" aria-label="Nama kategori">' +
+            '<div class="swatches">' + SWATCH.map(function(col){
+              return '<button type="button" class="sw" data-act="color" data-c="' + col + '" aria-label="Warna ' + col + '" aria-pressed="' + (col === cedit.c) + '" style="background:' + col + '"></button>';
+            }).join("") + '</div>' +
+            '<div class="cbtns"><button type="button" data-act="save">Simpan</button><button type="button" data-act="cancel">Batal</button></div></div>';
+        } else {
+          var armed = cdel && cdel.t === type && cdel.i === i;
+          h += '<div class="crow"><span class="cname"><i class="dot" style="background:' + c.c + '"></i>' + esc(c.n) + '<small>' + usageCount(type, c.n) + '</small></span>' +
+            '<span class="cbtns"><button type="button" data-act="names" data-t="' + type + '" data-i="' + i + '">Nama</button><button type="button" data-act="edit" data-t="' + type + '" data-i="' + i + '">Ubah</button>' +
+            '<button type="button" class="del" data-act="del" data-t="' + type + '" data-i="' + i + '">' + (armed ? "Yakin? Ketuk lagi" : "Hapus") + '</button></span></div>';
+        }
+      });
+      h += '<div class="addrow"><input data-add="' + type + '" maxlength="20" placeholder="Kategori baru" aria-label="Kategori baru ' + title + '">' +
+           '<button type="button" data-act="add" data-t="' + type + '">Tambah</button></div>';
+      return h;
+    }
+    $("sCats").innerHTML = group("Pengeluaran", "out") + group("Pemasukan", "in") +
+      '<p class="hint">Angka kecil di samping nama menunjukkan jumlah transaksi yang memakai kategori itu. Kalau kategori dihapus, transaksinya tetap tersimpan dengan nama lamanya.</p>';
+    if(cedit){ var en = $("eName"); if(en) en.focus(); }
+  }
+  function saveCatEdit(){
+    var type = cedit.t, i = cedit.i, arr = catList(type), old = arr[i].n;
+    var name = $("eName").value.trim().slice(0,20);
+    if(!name){ $("sErr").textContent = "Nama kategori tidak boleh kosong."; return; }
+    if(nameTaken(type, name, i)){ $("sErr").textContent = "Nama itu sudah dipakai kategori lain."; return; }
+    arr[i].n = name; arr[i].c = cedit.c;
+    if(name !== old) items.forEach(function(it){ if(typeOf(it) === type && it.cat === old) it.cat = name; });
+    save(); saveS(); cedit = null; renderSetCats(); render(); toast("Kategori diperbarui");
+  }
+  function deleteCat(type, i){
+    var arr = catList(type);
+    if(arr.length <= 1){ $("sErr").textContent = "Minimal harus ada satu kategori."; return; }
+    if(!(cdel && cdel.t === type && cdel.i === i)){
+      cdel = {t:type, i:i}; clearTimeout(cdelTimer);
+      cdelTimer = setTimeout(function(){ cdel = null; renderSetCats(); }, 4000);
+      renderSetCats(); return;
+    }
+    var name = arr[i].n, n = usageCount(type, name);
+    arr.splice(i, 1); cdel = null; clearTimeout(cdelTimer);
+    saveS(); renderSetCats(); render();
+    toast("Kategori dihapus" + (n ? ". " + n + " transaksi tetap tersimpan" : ""));
+  }
+  function addCatSettings(type){
+    var inp = $("sCats").querySelector('input[data-add="' + type + '"]');
+    var name = inp ? inp.value.trim().slice(0,20) : "";
+    if(!name){ $("sErr").textContent = "Tulis nama kategorinya dulu."; return; }
+    if(nameTaken(type, name, -1)){ $("sErr").textContent = "Kategori itu sudah ada."; return; }
+    var arr = catList(type);
+    arr.push({n:name, c:SWATCH[arr.length % SWATCH.length]});
+    saveS(); renderSetCats(); toast("Kategori ditambahkan");
+  }
+  function openSettings(focusSec){
+    $("sDay").value = S.startDay; $("sHint").textContent = hintFor(S.startDay); $("sErr").textContent = "";
+    cedit = null; cdel = null;
+    renderSetCats(); renderSec();
+    $("overlay2").classList.add("open");
+    if(focusSec === true) setTimeout(function(){ try{ $("secBox").scrollIntoView({block:"start"}); }catch(e){} }, 80);
+  }
+  function closeSettings(){ $("overlay2").classList.remove("open"); }
+  $("setBtn").addEventListener("click", function(){ openSettings(false); });
+  $("sClose").addEventListener("click", closeSettings);
+  $("overlay2").addEventListener("click", function(e){ if(e.target === this) closeSettings(); });
+  $("sDay").addEventListener("input", function(){
+    var d = parseInt(this.value, 10);
+    $("sHint").textContent = (d >= 1 && d <= 28) ? hintFor(d) : "Isi angka 1 sampai 28.";
+  });
+  $("sSave").addEventListener("click", function(){
+    var d = parseInt($("sDay").value, 10);
+    if(!(d >= 1 && d <= 28)){ $("sErr").textContent = "Tanggal mulai harus antara 1 dan 28."; return; }
+    S.startDay = d; saveS();
+    pkey = periodKey(todayStr());
+    closeSettings(); render(); toast("Pengaturan disimpan");
+  });
+  $("sCats").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-act]"); if(!b) return;
+    var act = b.getAttribute("data-act"), type = b.getAttribute("data-t"), i = parseInt(b.getAttribute("data-i"), 10);
+    $("sErr").textContent = "";
+    if(act === "names"){ openNames(type, catList(type)[i].n); return; }
+    if(act === "edit"){ cedit = {t:type, i:i, c:catList(type)[i].c}; cdel = null; renderSetCats(); return; }
+    if(act === "color"){
+      cedit.c = b.getAttribute("data-c");
+      var sws = $("sCats").querySelectorAll(".sw");
+      for(var k = 0; k < sws.length; k++) sws[k].setAttribute("aria-pressed", sws[k].getAttribute("data-c") === cedit.c);
+      return;
+    }
+    if(act === "cancel"){ cedit = null; renderSetCats(); return; }
+    if(act === "save"){ saveCatEdit(); return; }
+    if(act === "add"){ addCatSettings(type); return; }
+    if(act === "del"){ deleteCat(type, i); return; }
+  });
+  $("sCats").addEventListener("keydown", function(e){
+    if(e.key !== "Enter") return;
+    var t = e.target;
+    if(t && t.getAttribute && t.getAttribute("data-add")){ e.preventDefault(); addCatSettings(t.getAttribute("data-add")); }
+    else if(t && t.id === "eName"){ e.preventDefault(); saveCatEdit(); }
+  });
+
+  // ---- rincian kategori per periode ----
+  var dState = null;
+  function shiftKey(key, n){
+    var p = key.split("-"), d = new Date(+p[0], +p[1]-1+n, 1);
+    return d.getFullYear() + "-" + pad(d.getMonth()+1);
+  }
+  function catSum(type, name, key){
+    var r = periodRange(key), a = dstr(r[0]), b = dstr(r[1]), sum = 0, cnt = 0;
+    items.forEach(function(it){
+      if(typeOf(it) === type && it.cat === name && it.date >= a && it.date <= b){ sum += it.amount; cnt++; }
+    });
+    return {sum:sum, cnt:cnt};
+  }
+  function fmtShort(ds){
+    var p = ds.split("-");
+    return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString("id-ID",{weekday:"short",day:"numeric",month:"short"});
+  }
+  function renderDetail(){
+    var type = dState.t, name = dState.n, col = catColor(type, name);
+    var r = periodRange(pkey), a = dstr(r[0]), b = dstr(r[1]);
+    $("dTitle").innerHTML = '<i class="dot" style="background:' + col + '"></i>' + esc(name) + (type === "in" ? " (pemasukan)" : "");
+    $("dPeriod").textContent = rangeLabel(r[0], r[1]);
+    var cur = catSum(type, name, pkey);
+    $("dTotal").textContent = rp(cur.sum);
+    var all = 0;
+    items.forEach(function(it){ if(typeOf(it) === type && it.date >= a && it.date <= b) all += it.amount; });
+    var pct = all ? Math.round(cur.sum / all * 100) : 0;
+    var days = Math.round((r[1] - r[0]) / 864e5) + 1;
+    $("dStat").textContent = cur.cnt + " transaksi, " + pct + "% dari total " + (type === "in" ? "pemasukan" : "pengeluaran") +
+      " periode ini, rata-rata " + rp(cur.sum / days) + " per hari.";
+    var rows = [], max = 0;
+    for(var n = 0; n < 6; n++){
+      var k = shiftKey(pkey, -n), sm = catSum(type, name, k).sum;
+      rows.push({k:k, s:sm}); if(sm > max) max = sm;
+    }
+    $("dHist").innerHTML = rows.map(function(x, idx){
+      var rr = periodRange(x.k);
+      var w = max ? Math.max(Math.round(x.s / max * 100), x.s ? 2 : 0) : 0;
+      return '<div class="hrow' + (idx === 0 ? " now" : "") + '"><div class="top"><span>' + esc(rangeLabel(rr[0], rr[1])) + '</span><span>' + rp(x.s) + '</span></div>' +
+             '<div class="track"><div class="fill" style="width:' + w + '%;background:' + col + '"></div></div></div>';
+    }).join("");
+    var list = items.filter(function(it){ return typeOf(it) === type && it.cat === name && it.date >= a && it.date <= b; })
+      .sort(function(x, y){ return (y.amount - x.amount) || (x.date < y.date ? 1 : x.date > y.date ? -1 : 0); });
+    $("dList").innerHTML = list.length ? list.map(function(it){
+      return '<button class="item" data-id="' + esc(it.id) + '"><span class="txt"><b>' + esc(it.note || "Tanpa catatan") + '</b><span>' + esc(fmtShort(it.date)) + '</span></span>' +
+             '<span class="amt' + (type === "in" ? " inc" : "") + '">' + (type === "in" ? "+" : "") + rp(it.amount) + '</span></button>';
+    }).join("") : '<div class="empty">Belum ada transaksi di periode ini.</div>';
+    var nmx = namesOf(type, name);
+    $("dNames").innerHTML = nmx.length
+      ? nmx.slice(0, 14).map(function(n){ return '<span class="chip sm">' + esc(n.n) + '<small>' + n.c + 'x</small></span>'; }).join("") +
+        (nmx.length > 14 ? '<span class="chip sm">+' + (nmx.length - 14) + ' lagi</span>' : "")
+      : '<span class="hint">Belum ada nama (catatan) di kategori ini.</span>';
+  }
+  function openDetail(type, name){ dState = {t:type, n:name}; renderDetail(); $("overlay4").classList.add("open"); }
+  function closeDetail(){ $("overlay4").classList.remove("open"); }
+  function onCatTap(e){
+    var b = e.target.closest(".cat");
+    if(b) openDetail(b.getAttribute("data-t"), b.getAttribute("data-n"));
+  }
+  $("catsOut").addEventListener("click", onCatTap);
+  $("catsIn").addEventListener("click", onCatTap);
+  $("dClose").addEventListener("click", closeDetail);
+  $("overlay4").addEventListener("click", function(e){ if(e.target === this) closeDetail(); });
+  $("dList").addEventListener("click", function(e){
+    var b = e.target.closest(".item");
+    if(b){ var id = b.getAttribute("data-id"); closeDetail(); openSheet(id); }
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape"){ closeSheet(); closeSettings(); closeRestore(); closeDetail(); closeHistory(); }
+  });
+
+  // ---- CSV ----
+  function csv(){
+    function q(s){ return '"'+String(s).replace(/"/g,'""')+'"'; }
+    var rows = items.slice().sort(function(a,b){ return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    return ["tanggal,jenis,kategori,nominal,catatan"].concat(rows.map(function(r){
+      return [r.date, typeOf(r) === "in" ? "pemasukan" : "pengeluaran", q(r.cat), r.amount, q(r.note||"")].join(",");
+    })).join("\n");
+  }
+  $("csvBtn").addEventListener("click", function(){
+    if(!items.length){ toast("Belum ada data untuk disalin"); return; }
+    var text = csv();
+    var box = $("csvbox"), ta = $("csvText");
+    ta.value = text;
+    function fallback(){
+      box.style.display = "block"; ta.focus(); ta.select();
+      toast("Salin teks yang terpilih");
+    }
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){ box.style.display = "none"; toast("CSV disalin"); }, fallback);
+      } else fallback();
+    }catch(e){ fallback(); }
+  });
+
+  // ---- cadangan dan pemulihan ----
+  var dl = null;
+  try{
+    if(window.claude && typeof window.claude.use === "function"){
+      window.claude.use("downloads").then(function(d){ dl = d; }, function(){});
+    }
+  }catch(e){}
+
+  function fmtDate(ds){
+    var p = ds.split("-");
+    return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"});
+  }
+  function updateBackupInfo(){
+    $("storeWarn").style.display = storageOk ? "none" : "block";
+    var si = $("storeInfo");
+    if(items.length){
+      var ds = items.map(function(it){ return it.date; }).sort();
+      si.textContent = "Tersimpan di aplikasi: " + items.length + " transaksi (" + fmtDate(ds[0]) + " sampai " + fmtDate(ds[ds.length-1]) + ").";
+    } else si.textContent = "Belum ada transaksi tersimpan.";
+    var el = $("backupInfo");
+    if(!S.lastBackup){ el.textContent = "Belum pernah dicadangkan. Data saat ini hanya ada di browser ini."; return; }
+    el.textContent = "Cadangan terakhir: " + fmtDate(S.lastBackup) + ".";
+  }
+  function backupText(){
+    return JSON.stringify({
+      app:"catatan-keuangan", version:1, exportedAt:new Date().toISOString(),
+      items:items,
+      settings:{startDay:S.startDay, catsOut:S.catsOut, catsIn:S.catsIn}
+    }, null, 1);
+  }
+  function markBackup(){ S.lastBackup = todayStr(); saveS(); updateBackupInfo(); }
+  function showBkBox(msg){
+    $("bkMsg").textContent = msg;
+    $("bkText").value = backupText();
+    $("bkbox").style.display = "block";
+    $("bkText").focus(); $("bkText").select();
+  }
+
+  $("bkFileBtn").addEventListener("click", function(){
+    if(!items.length){ toast("Belum ada data untuk dicadangkan"); return; }
+    if(!dl){
+      try{
+        var bu = URL.createObjectURL(new Blob([backupText()], {type:"application/json"}));
+        var ba = document.createElement("a");
+        ba.href = bu; ba.download = "cadangan-keuangan-" + todayStr() + ".json";
+        document.body.appendChild(ba); ba.click();
+        setTimeout(function(){ URL.revokeObjectURL(bu); ba.remove(); }, 4000);
+        markBackup(); toast("File cadangan diunduh");
+      }catch(e){
+        showBkBox("File tidak bisa dibuat. Salin teks ini, lalu simpan ke Google Drive atau Keep.");
+      }
+      return;
+    }
+    dl.save({filename:"cadangan-keuangan-" + todayStr() + ".json", data:backupText()}).then(function(){
+      markBackup(); toast("File cadangan disimpan");
+    }, function(err){
+      if(err && err.code === "declined"){ toast("Pencadangan dibatalkan"); return; }
+      showBkBox("File tidak bisa dibuat. Salin teks ini, lalu simpan ke Google Drive atau Keep.");
+    });
+  });
+
+  $("bkCopyBtn").addEventListener("click", function(){
+    if(!items.length){ toast("Belum ada data untuk dicadangkan"); return; }
+    var text = backupText();
+    function fb(){ showBkBox("Salin teks yang terpilih, lalu simpan ke Google Drive, Keep, atau kirim ke emailmu sendiri."); }
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){
+          $("bkbox").style.display = "none"; markBackup(); toast("Teks cadangan disalin");
+        }, fb);
+      } else fb();
+    }catch(e){ fb(); }
+  });
+
+  var rMode = "merge", rArmed = false, rTimer = null;
+  function previewRestore(){
+    var el = $("rInfo"), text = $("rText").value.trim();
+    if(!text){ el.textContent = ""; return; }
+    var pb;
+    try{ pb = parseBackup(text); }catch(e){ el.textContent = "Teks ini belum terbaca sebagai cadangan yang valid."; return; }
+    if(!pb.items.length){ el.textContent = "Tidak ada transaksi yang valid di cadangan ini."; return; }
+    var ds = pb.items.map(function(it){ return it.date; }).sort();
+    var have = {}; items.forEach(function(it){ have[it.id] = 1; });
+    var dup = pb.items.filter(function(it){ return have[it.id]; }).length;
+    var msg = "Cadangan berisi " + pb.items.length + " transaksi (" + fmtDate(ds[0]) + " sampai " + fmtDate(ds[ds.length-1]) + "). ";
+    msg += rMode === "replace"
+      ? "Data sekarang (" + items.length + " transaksi) akan diganti."
+      : (pb.items.length - dup) + " akan ditambahkan, " + dup + " sudah ada.";
+    el.textContent = msg;
+  }
+  function setRMode(m){
+    rMode = m; rArmed = false; $("rGo").textContent = "Pulihkan";
+    $("rMerge").setAttribute("aria-pressed", m === "merge");
+    $("rReplace").setAttribute("aria-pressed", m === "replace");
+    $("rHint").textContent = m === "merge"
+      ? "Menambahkan transaksi dari cadangan yang belum ada. Data yang sekarang tidak dihapus."
+      : "Semua data sekarang diganti dengan isi cadangan.";
+    previewRestore();
+  }
+  function openRestore(){
+    $("rText").value = ""; $("rFile").value = ""; $("rErr").textContent = "";
+    setRMode("merge");
+    $("overlay3").classList.add("open");
+  }
+  function closeRestore(){ $("overlay3").classList.remove("open"); }
+
+  $("restoreBtn").addEventListener("click", openRestore);
+  $("rCancel").addEventListener("click", closeRestore);
+  $("overlay3").addEventListener("click", function(e){ if(e.target === this) closeRestore(); });
+  $("rText").addEventListener("input", function(){ $("rErr").textContent = ""; previewRestore(); });
+  $("rMerge").addEventListener("click", function(){ setRMode("merge"); });
+  $("rReplace").addEventListener("click", function(){ setRMode("replace"); });
+  $("rFile").addEventListener("change", function(){
+    var f = this.files && this.files[0]; if(!f) return;
+    if(f.size > 5*1024*1024){ $("rErr").textContent = "File terlalu besar untuk berkas cadangan."; return; }
+    var rd = new FileReader();
+    rd.onload = function(){ $("rText").value = String(rd.result || ""); $("rErr").textContent = ""; previewRestore(); };
+    rd.onerror = function(){ $("rErr").textContent = "File tidak bisa dibaca."; };
+    rd.readAsText(f);
+  });
+
+  function cleanItem(r){
+    if(!r || typeof r !== "object") return null;
+    var amount = Number(r.amount);
+    if(!isFinite(amount) || amount <= 0) return null;
+    var date = String(r.date || "");
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+    var cat = String(r.cat || "").trim().slice(0,20);
+    if(!cat) return null;
+    var id = String(r.id || (Date.now().toString(36) + Math.random().toString(36).slice(2,6))).slice(0,40);
+    return {id:id, type:(r.type === "in" ? "in" : "out"), amount:Math.round(amount), cat:cat, note:String(r.note || "").slice(0,80), date:date};
+  }
+  function cleanCats(a){
+    var out = [], seen = {};
+    if(!Array.isArray(a)) return out;
+    a.forEach(function(c){
+      if(!c || typeof c.n !== "string") return;
+      var n = c.n.trim().slice(0,20); if(!n) return;
+      if(seen[n.toLowerCase()]) return;
+      seen[n.toLowerCase()] = 1;
+      out.push({n:n, c:(typeof c.c === "string" && /^#[0-9a-fA-F]{6}$/.test(c.c)) ? c.c : PALETTE[out.length % PALETTE.length]});
+    });
+    return out;
+  }
+  function parseBackup(text){
+    var o;
+    try{ o = JSON.parse(text); }
+    catch(e1){
+      try{
+        var t2 = String(text).replace(/[\u201C\u201D\u201E\u201F]/g, '"');
+        var a = t2.indexOf("{"), b = t2.lastIndexOf("}");
+        o = JSON.parse(t2.slice(a, b + 1));
+      }catch(e2){ throw "Teks bukan cadangan yang valid. Pastikan seluruh isinya tersalin."; }
+    }
+    var arr = Array.isArray(o) ? o : (o && Array.isArray(o.items) ? o.items : null);
+    if(!arr) throw "Data transaksi tidak ditemukan di cadangan ini.";
+    var good = [], bad = 0;
+    arr.forEach(function(r){ var c = cleanItem(r); if(c) good.push(c); else bad++; });
+    var st = (o && !Array.isArray(o) && o.settings) || {};
+    var d = parseInt(st.startDay, 10);
+    return {items:good, bad:bad, startDay:(d >= 1 && d <= 28) ? d : null, catsOut:Array.isArray(st.catsOut) ? cleanCats(st.catsOut) : null, catsIn:Array.isArray(st.catsIn) ? cleanCats(st.catsIn) : null, customOut:cleanCats(st.customOut), customIn:cleanCats(st.customIn)};
+  }
+  function addMissingCats(type, list){
+    var arr = catList(type);
+    list.forEach(function(c){
+      var exists = arr.some(function(x){ return x.n.toLowerCase() === c.n.toLowerCase(); });
+      if(!exists) arr.push(c);
+    });
+  }
+  function ensureCatsForItems(list){
+    list.forEach(function(it){
+      var arr = catList(typeOf(it));
+      if(!arr.some(function(c){ return c.n.toLowerCase() === it.cat.toLowerCase(); })){
+        arr.push({n:it.cat, c:SWATCH[arr.length % SWATCH.length]});
+      }
+    });
+  }
+
+  $("rGo").addEventListener("click", function(){
+    var text = $("rText").value.trim();
+    if(!text){ $("rErr").textContent = "Pilih file atau tempel teks cadangan dulu."; return; }
+    var pb;
+    try{ pb = parseBackup(text); }catch(msg){ $("rErr").textContent = String(msg); return; }
+    if(!pb.items.length){ $("rErr").textContent = "Tidak ada transaksi yang valid di cadangan ini."; return; }
+    if(rMode === "replace" && items.length && !rArmed){
+      var btn = this;
+      rArmed = true; btn.textContent = "Yakin ganti semua? Ketuk lagi";
+      clearTimeout(rTimer);
+      rTimer = setTimeout(function(){ rArmed = false; btn.textContent = "Pulihkan"; }, 4000);
+      return;
+    }
+    var added = 0, dup = 0, seen = {};
+    if(rMode === "replace"){
+      items = [];
+      pb.items.forEach(function(it){ if(seen[it.id]){ dup++; } else { seen[it.id] = 1; items.push(it); added++; } });
+      S.catsOut = (pb.catsOut && pb.catsOut.length) ? pb.catsOut : cleanCats(DEF_OUT.concat(pb.customOut));
+      S.catsIn = (pb.catsIn && pb.catsIn.length) ? pb.catsIn : cleanCats(DEF_IN.concat(pb.customIn));
+      if(pb.startDay) S.startDay = pb.startDay;
+    } else {
+      items.forEach(function(it){ seen[it.id] = 1; });
+      pb.items.forEach(function(it){ if(seen[it.id]){ dup++; } else { seen[it.id] = 1; items.push(it); added++; } });
+      addMissingCats("out", pb.catsOut || pb.customOut); addMissingCats("in", pb.catsIn || pb.customIn);
+    }
+    ensureCatsForItems(pb.items);
+    save(); saveS();
+    var newest = pb.items.map(function(it){ return it.date; }).sort().pop();
+    var nk = periodKey(newest), ck = periodKey(todayStr());
+    pkey = nk < ck ? nk : ck;
+    closeRestore(); render();
+    toast(added + " transaksi dipulihkan" + (dup ? ", " + dup + " sudah ada" : "") + (pb.bad ? ", " + pb.bad + " dilewati" : "") + ". Total sekarang " + items.length + ".");
+  });
+
+  // ---- hapus semua ----
+  var wipeArmed = false, wipeTimer = null;
+  $("wipeBtn").addEventListener("click", function(){
+    var b = this;
+    if(!wipeArmed){
+      wipeArmed = true; b.textContent = "Yakin? Ketuk lagi";
+      clearTimeout(wipeTimer);
+      wipeTimer = setTimeout(function(){ wipeArmed = false; b.textContent = "Hapus semua data"; }, 4000);
+      return;
+    }
+    wipeArmed = false; b.textContent = "Hapus semua data";
+    items = []; save(); render(); toast("Semua data dihapus");
+  });
+
+  // ---- nama transaksi per kategori ----
+  var keepSim = null, simState = null;
+  function cleanNote(s){ return String(s || "").replace(/\s+/g, " ").trim().slice(0, 80); }
+  function normName(s){ return String(s || "").toLowerCase().replace(/\s+/g, " ").trim(); }
+  function lev(a, b){
+    // jarak edit (termasuk huruf bersebelahan yang tertukar, mis. Bakso/Basko = 1)
+    var m = a.length, n = b.length, d = [], i, j, c;
+    for(i = 0; i <= m; i++) d[i] = [i];
+    for(j = 1; j <= n; j++) d[0][j] = j;
+    for(i = 1; i <= m; i++){
+      for(j = 1; j <= n; j++){
+        c = a.charAt(i-1) === b.charAt(j-1) ? 0 : 1;
+        d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + c);
+        if(i > 1 && j > 1 && a.charAt(i-1) === b.charAt(j-2) && a.charAt(i-2) === b.charAt(j-1)){
+          d[i][j] = Math.min(d[i][j], d[i-2][j-2] + 1);
+        }
+      }
+    }
+    return d[m][n];
+  }
+  function similarName(a, b){
+    var x = normName(a), y = normName(b);
+    if(x === y) return true;
+    var m = Math.max(x.length, y.length);
+    if(m < 5) return false;
+    return lev(x, y) <= (m <= 8 ? 1 : 2);
+  }
+  function namesOf(type, cat){
+    var m = Object.create(null);
+    items.forEach(function(it){
+      if(typeOf(it) !== type || it.cat !== cat || !it.note) return;
+      var o = m[it.note] || (m[it.note] = {n:it.note, c:0, s:0});
+      o.c++; o.s += it.amount;
+    });
+    return Object.keys(m).map(function(k){ return m[k]; }).sort(function(a, b){
+      var x = a.n.toLowerCase(), y = b.n.toLowerCase();
+      return (b.c - a.c) || (x < y ? -1 : x > y ? 1 : 0);
+    });
+  }
+  function groupsOf(names){
+    var groups = [];
+    names.forEach(function(nm){
+      for(var i = 0; i < groups.length; i++){
+        if(similarName(groups[i][0].n, nm.n)){ groups[i].push(nm); return; }
+      }
+      groups.push([nm]);
+    });
+    return groups.filter(function(g){ return g.length > 1; });
+  }
+  function canonicalFor(type, cat, note, exclude){
+    var nm = namesOf(type, cat), x = normName(note);
+    for(var i = 0; i < nm.length; i++){
+      if(nm[i].n !== exclude && normName(nm[i].n) === x) return nm[i].n;
+    }
+    return note;
+  }
+  function findSimilar(type, cat, note){
+    var nm = namesOf(type, cat);
+    if(nm.some(function(n){ return n.n === note; })) return null;
+    for(var i = 0; i < nm.length; i++){
+      if(normName(nm[i].n) !== normName(note) && similarName(note, nm[i].n)) return nm[i].n;
+    }
+    return null;
+  }
+  function showSim(note, sim){
+    simState = {note:note, sim:sim};
+    $("simTxt").textContent = '"' + note + '" mirip dengan nama yang sudah ada: "' + sim + '".';
+    $("simUse").textContent = 'Pakai "' + sim + '"';
+    $("simKeep").textContent = 'Tetap "' + note + '"';
+    $("simBox").style.display = "block";
+    try{ $("simBox").scrollIntoView({block:"center"}); }catch(e){}
+  }
+  function renderSug(){
+    var names = namesOf(eType, selCat), typed = normName($("fNote").value);
+    var row = $("sugRow"), box = $("nameSug");
+    if(!names.length){ row.style.display = "none"; box.innerHTML = ""; return; }
+    row.style.display = "flex";
+    var list = typed ? names.filter(function(n){ return normName(n.n).indexOf(typed) >= 0 && normName(n.n) !== typed; }) : names;
+    box.innerHTML = list.slice(0, 8).map(function(n){
+      return '<button type="button" class="chip sm" data-n="' + esc(n.n) + '">' + esc(n.n) + '<small>' + n.c + 'x</small></button>';
+    }).join("");
+  }
+  $("simUse").addEventListener("click", function(){
+    if(!simState) return;
+    $("fNote").value = simState.sim; $("simBox").style.display = "none"; $("saveBtn").click();
+  });
+  $("simKeep").addEventListener("click", function(){
+    if(!simState) return;
+    keepSim = simState.note; $("simBox").style.display = "none"; $("saveBtn").click();
+  });
+  $("fNote").addEventListener("input", function(){ keepSim = null; $("simBox").style.display = "none"; renderSug(); });
+  $("nameSug").addEventListener("click", function(e){
+    var b = e.target.closest(".chip"); if(!b) return;
+    $("fNote").value = b.getAttribute("data-n"); keepSim = null; $("simBox").style.display = "none"; renderSug();
+  });
+  $("sugManage").addEventListener("click", function(){ openNames(eType, selCat); });
+  $("dManage").addEventListener("click", function(){ if(dState) openNames(dState.t, dState.n); });
+
+  var nState = null, nTimer = null;
+  function renameNote(type, cat, from, to){
+    var n = 0;
+    items.forEach(function(it){
+      if(typeOf(it) === type && it.cat === cat && it.note === from){ it.note = to; n++; }
+    });
+    return n;
+  }
+  function openNames(type, cat){
+    nState = {t:type, c:cat, edit:null, del:null, groups:[]};
+    $("nErr").textContent = ""; renderNames();
+    $("overlay7").classList.add("open");
+  }
+  function closeNames(){
+    $("overlay7").classList.remove("open"); nState = null; clearTimeout(nTimer);
+    render();
+    if($("overlay4").classList.contains("open") && dState) renderDetail();
+    if($("overlay").classList.contains("open")) renderSug();
+  }
+  function renderNames(){
+    var st = nState, names = namesOf(st.t, st.c), col = catColor(st.t, st.c);
+    $("nTitle").innerHTML = '<i class="dot" style="background:' + col + '"></i>' + esc(st.c);
+    st.groups = groupsOf(names);
+    $("nSim").innerHTML = st.groups.length
+      ? '<div class="sub">Nama yang mirip (sebaiknya digabung)</div>' + st.groups.map(function(g, i){
+          return '<div class="simgroup"><span>' + g.map(function(n){ return esc(n.n) + ' <small>' + n.c + 'x</small>'; }).join(", ") + '</span>' +
+            '<button type="button" class="ghost" data-act="nmerge" data-g="' + i + '">Gabung jadi "' + esc(g[0].n) + '"</button></div>';
+        }).join("")
+      : "";
+    $("nList").innerHTML = names.length ? names.map(function(n){
+      if(st.edit === n.n){
+        return '<div class="cedit"><input class="einput" id="nName" maxlength="80" value="' + esc(n.n) + '" aria-label="Nama baru">' +
+          '<div class="cbtns" style="margin-top:8px"><button type="button" data-act="nsave">Simpan</button><button type="button" data-act="ncancel">Batal</button></div></div>';
+      }
+      var armed = st.del === n.n;
+      return '<div class="crow"><span class="cname">' + esc(n.n) + '<small>' + n.c + 'x \u00b7 ' + rp(n.s) + '</small></span>' +
+        '<span class="cbtns"><button type="button" data-act="nedit" data-n="' + esc(n.n) + '">Ubah</button>' +
+        '<button type="button" class="del" data-act="ndel" data-n="' + esc(n.n) + '">' + (armed ? "Yakin? Ketuk lagi" : "Hapus") + '</button></span></div>';
+    }).join("") : '<p class="hint">Belum ada nama di kategori ini.</p>';
+    if(st.edit){ var en = $("nName"); if(en){ en.focus(); en.select(); } }
+  }
+  $("overlay7").addEventListener("click", function(e){
+    if(e.target === this){ closeNames(); return; }
+    var b = e.target.closest("button[data-act]"); if(!b || !nState) return;
+    var act = b.getAttribute("data-act"), st = nState, name = b.getAttribute("data-n");
+    $("nErr").textContent = "";
+    if(act === "nedit"){ st.edit = name; st.del = null; renderNames(); return; }
+    if(act === "ncancel"){ st.edit = null; renderNames(); return; }
+    if(act === "nsave"){
+      var old = st.edit, nw = cleanNote($("nName").value);
+      if(!nw){ $("nErr").textContent = "Nama tidak boleh kosong. Untuk menghapus, pakai tombol Hapus."; return; }
+      if(nw === old){ st.edit = null; renderNames(); return; }
+      var exists = namesOf(st.t, st.c).some(function(x){ return x.n !== old && normName(x.n) === normName(nw); });
+      var target = canonicalFor(st.t, st.c, nw, old);
+      var cnt = renameNote(st.t, st.c, old, target);
+      save(); st.edit = null; renderNames();
+      toast(cnt + " transaksi diubah" + (exists ? " dan digabung ke \"" + target + "\"" : ""));
+      return;
+    }
+    if(act === "ndel"){
+      if(st.del !== name){
+        st.del = name; clearTimeout(nTimer);
+        nTimer = setTimeout(function(){ if(nState){ nState.del = null; renderNames(); } }, 4000);
+        renderNames();
+        $("nErr").textContent = "Catatan pada transaksi dengan nama ini akan dikosongkan. Transaksinya tetap ada.";
+        return;
+      }
+      var c2 = renameNote(st.t, st.c, name, "");
+      st.del = null; clearTimeout(nTimer);
+      save(); renderNames(); toast("Nama dihapus dari " + c2 + " transaksi");
+      return;
+    }
+    if(act === "nmerge"){
+      var g = st.groups[parseInt(b.getAttribute("data-g"), 10)]; if(!g) return;
+      var tot = 0;
+      for(var k = 1; k < g.length; k++) tot += renameNote(st.t, st.c, g[k].n, g[0].n);
+      save(); renderNames(); toast(tot + " transaksi digabung jadi \"" + g[0].n + "\"");
+      return;
+    }
+  });
+  $("nClose").addEventListener("click", closeNames);
+
+  // ---- keamanan: kunci password ----
+  var AKEY = "pengeluaran:auth:v1", memA = null, ITER = 120000;
+  var cryptoOk = !!(window.crypto && window.crypto.subtle && window.TextEncoder);
+  function loadA(){
+    try{
+      var s = localStorage.getItem(AKEY);
+      if(s){ var o = JSON.parse(s); if(o && o.hash && o.salt && o.rhash && o.rsalt) return o; }
+    }catch(e){}
+    return memA;
+  }
+  var A = loadA();
+  function saveA(){
+    memA = A;
+    try{ if(A) localStorage.setItem(AKEY, JSON.stringify(A)); else localStorage.removeItem(AKEY); }catch(e){}
+  }
+  function b64(buf){ var a = new Uint8Array(buf), s = ""; for(var i = 0; i < a.length; i++) s += String.fromCharCode(a[i]); return btoa(s); }
+  function unb64(str){ var s = atob(str), a = new Uint8Array(s.length); for(var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; }
+  function randSalt(){ var a = new Uint8Array(16); crypto.getRandomValues(a); return b64(a); }
+  function derive(secret, salt, iter){
+    return crypto.subtle.importKey("raw", new TextEncoder().encode(secret), "PBKDF2", false, ["deriveBits"]).then(function(k){
+      return crypto.subtle.deriveBits({name:"PBKDF2", hash:"SHA-256", salt:unb64(salt), iterations:iter}, k, 256);
+    }).then(b64);
+  }
+  function makeCode(){
+    var al = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", a = new Uint8Array(16), out = "";
+    crypto.getRandomValues(a);
+    for(var i = 0; i < 16; i++){ out += al.charAt(a[i] % 32); if(i % 4 === 3 && i < 15) out += "-"; }
+    return out;
+  }
+  function normCode(c){ return String(c || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+  function waitLeft(){ return A ? Math.max(0, Math.ceil(((A.until || 0) - Date.now()) / 1000)) : 0; }
+  function noteFail(){ A.fails = (A.fails || 0) + 1; if(A.fails >= 5){ A.until = Date.now() + 30000; A.fails = 0; } saveA(); }
+  function okReset(){ A.fails = 0; A.until = 0; saveA(); }
+  function verifyPass(pw){ return derive(pw, A.salt, A.iter || ITER).then(function(h){ return h === A.hash; }); }
+  function verifyCode(c){ return derive(normCode(c), A.rsalt, A.iter || ITER).then(function(h){ return h === A.rhash; }); }
+
+  function showLockMain(){
+    $("lockMain").style.display = ""; $("lockReset").style.display = "none";
+    $("lkErr").textContent = ""; $("rcErr").textContent = ""; $("rcGo").disabled = false;
+    $("rcWipe").textContent = "Tidak punya kode? Hapus data dan atur ulang";
+    wipeArmed2 = false;
+  }
+  function showLock(){
+    document.documentElement.classList.add("locked");
+    ["overlay","overlay2","overlay3","overlay4","overlay5","overlay7"].forEach(function(id){ $(id).classList.remove("open"); });
+    $("lkPass").value = ""; $("rcCode").value = ""; $("rcNew").value = ""; $("rcNew2").value = "";
+    showLockMain();
+    setTimeout(function(){ $("lkPass").focus(); }, 60);
+  }
+  function unlock(){ document.documentElement.classList.remove("locked"); render(); }
+  var wipeArmed2 = false;
+
+  function tryOpen(){
+    if(!A){ unlock(); return; }
+    var left = waitLeft();
+    if(left > 0){ $("lkErr").textContent = "Terlalu banyak percobaan. Coba lagi dalam " + left + " detik."; return; }
+    var pw = $("lkPass").value;
+    if(!pw){ $("lkErr").textContent = "Masukkan password."; return; }
+    if(!cryptoOk){ $("lkErr").textContent = "Fitur keamanan tidak didukung di tampilan ini. Buka lewat Chrome."; return; }
+    $("lkOpen").disabled = true;
+    verifyPass(pw).then(function(ok){
+      $("lkOpen").disabled = false;
+      if(ok){ okReset(); $("lkPass").value = ""; unlock(); }
+      else {
+        noteFail();
+        $("lkErr").textContent = waitLeft() > 0 ? "Terlalu banyak percobaan. Coba lagi dalam 30 detik." : "Password salah.";
+        $("lkPass").select();
+      }
+    }, function(){ $("lkOpen").disabled = false; $("lkErr").textContent = "Gagal memeriksa password."; });
+  }
+  $("lkOpen").addEventListener("click", tryOpen);
+  $("lkPass").addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); tryOpen(); } });
+  $("lkForgot").addEventListener("click", function(){
+    $("lockMain").style.display = "none"; $("lockReset").style.display = "";
+    setTimeout(function(){ $("rcCode").focus(); }, 60);
+  });
+  $("rcBack").addEventListener("click", showLockMain);
+  $("rcNew2").addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); $("rcGo").click(); } });
+
+  function showCode(code){
+    $("rcShow").textContent = code;
+    var to = A && A.email ? encodeURIComponent(A.email) : "";
+    $("rcMail").href = "mailto:" + to + "?subject=" + encodeURIComponent("Kode pemulihan Catatan Keuangan") +
+      "&body=" + encodeURIComponent("Kode pemulihan (simpan baik-baik dan jangan dibagikan):\n" + code);
+    $("rcSaved").checked = false; $("rcDone").disabled = true;
+    $("overlay6").classList.add("open");
+  }
+  $("rcSaved").addEventListener("change", function(){ $("rcDone").disabled = !this.checked; });
+  $("rcDone").addEventListener("click", function(){ $("overlay6").classList.remove("open"); $("rcShow").textContent = ""; });
+  function selectCode(){
+    var r = document.createRange(); r.selectNodeContents($("rcShow"));
+    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    toast("Kode terpilih, salin secara manual");
+  }
+  $("rcCopy").addEventListener("click", function(){
+    var code = $("rcShow").textContent;
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(code).then(function(){ toast("Kode disalin"); }, selectCode);
+        return;
+      }
+    }catch(e){}
+    selectCode();
+  });
+
+  $("rcGo").addEventListener("click", function(){
+    var er = $("rcErr"), p1 = $("rcNew").value, p2 = $("rcNew2").value, code = $("rcCode").value;
+    var left = waitLeft();
+    if(left > 0){ er.textContent = "Terlalu banyak percobaan. Coba lagi dalam " + left + " detik."; return; }
+    if(!normCode(code)){ er.textContent = "Masukkan kode pemulihan."; return; }
+    if(p1.length < 6){ er.textContent = "Password baru minimal 6 karakter."; return; }
+    if(p1 !== p2){ er.textContent = "Ulangi password dengan sama persis."; return; }
+    if(!cryptoOk){ er.textContent = "Fitur keamanan tidak didukung di tampilan ini."; return; }
+    er.textContent = ""; $("rcGo").disabled = true;
+    verifyCode(code).then(function(ok){
+      if(!ok){
+        noteFail(); $("rcGo").disabled = false;
+        er.textContent = waitLeft() > 0 ? "Terlalu banyak percobaan. Coba lagi dalam 30 detik." : "Kode pemulihan salah.";
+        return;
+      }
+      var salt = randSalt(), rsalt = randSalt(), newCode = makeCode(), it = A.iter || ITER;
+      return Promise.all([derive(p1, salt, it), derive(normCode(newCode), rsalt, it)]).then(function(h){
+        A.salt = salt; A.hash = h[0]; A.rsalt = rsalt; A.rhash = h[1]; A.iter = it; okReset();
+        $("rcGo").disabled = false;
+        unlock(); showCode(newCode); toast("Password diatur ulang");
+      });
+    }).catch(function(){ $("rcGo").disabled = false; er.textContent = "Gagal memproses. Coba lagi."; });
+  });
+  $("rcWipe").addEventListener("click", function(){
+    var b = this;
+    if(!wipeArmed2){
+      wipeArmed2 = true; b.textContent = "Yakin? Semua data akan dihapus. Ketuk lagi";
+      setTimeout(function(){ if(wipeArmed2){ wipeArmed2 = false; b.textContent = "Tidak punya kode? Hapus data dan atur ulang"; } }, 5000);
+      return;
+    }
+    wipeArmed2 = false;
+    items = []; mem = null; memS = null; memA = null; A = null;
+    try{ localStorage.removeItem(KEY); localStorage.removeItem(SKEY); localStorage.removeItem(AKEY); }catch(e){}
+    S = loadS(); pkey = periodKey(todayStr());
+    unlock(); toast("Data dihapus. Pulihkan dari file cadangan jika ada.");
+  });
+
+  // pengaturan keamanan
+  function secMsg(t, ok){ var el = $("secMsg"); if(el){ el.textContent = t; el.className = "msg " + (ok ? "ok" : "bad"); } }
+  function renderSec(){
+    var h;
+    if(!cryptoOk || !storageOk){
+      h = '<p class="hint">Kunci password belum bisa dipakai di tampilan ini (butuh penyimpanan dan fitur keamanan browser). Buka aplikasi lewat Chrome.</p>';
+    } else if(!A){
+      h = '<p class="hint">Kunci aplikasi dengan password supaya orang lain yang memegang HP-mu tidak bisa membukanya. Kunci ini mengunci tampilan aplikasi; data di penyimpanan browser tidak dienkripsi.</p>' +
+        '<div class="field"><label for="spNew">Password baru (minimal 6 karakter)</label><input id="spNew" type="password" autocomplete="new-password"></div>' +
+        '<div class="field"><label for="spNew2">Ulangi password</label><input id="spNew2" type="password" autocomplete="new-password"></div>' +
+        '<div class="field"><label for="spEmail">Email untuk menyimpan kode pemulihan (opsional)</label><input id="spEmail" type="email" autocomplete="email" inputmode="email"></div>' +
+        '<div class="secbtns"><button type="button" class="ghost" data-sec="enable">Aktifkan kunci</button></div><p class="msg" id="secMsg"></p>';
+    } else {
+      h = '<p class="hint">Kunci aktif' + (A.email ? ' (email pemulihan: ' + esc(A.email) + ')' : '') + '. Aplikasi terkunci lagi setelah ' + (A.lockMin || 5) + ' menit ditinggalkan, dan selalu terkunci saat dibuka ulang.</p>' +
+        '<div class="field"><label>Kunci otomatis setelah ditinggalkan</label><div class="chips">' + [1, 5, 15, 30].map(function(m){
+          return '<button type="button" class="chip" data-sec="lockmin" data-m="' + m + '" aria-pressed="' + (m === (A.lockMin || 5)) + '">' + m + ' menit</button>';
+        }).join("") + '</div></div>' +
+        '<div class="field"><label for="spCur">Password saat ini (diperlukan untuk mengubah pengaturan ini)</label><input id="spCur" type="password" autocomplete="current-password"></div>' +
+        '<div class="field"><label for="spNew">Password baru (hanya untuk Ganti password)</label><input id="spNew" type="password" autocomplete="new-password"></div>' +
+        '<div class="secbtns"><button type="button" class="ghost" data-sec="change">Ganti password</button>' +
+        '<button type="button" class="ghost" data-sec="newcode">Kode pemulihan baru</button>' +
+        '<button type="button" class="ghost danger" data-sec="disable">Matikan kunci</button>' +
+        '<button type="button" class="ghost" data-sec="locknow">Kunci sekarang</button></div><p class="msg" id="secMsg"></p>';
+    }
+    $("secBox").innerHTML = h;
+    updateLockTip();
+  }
+  $("secBox").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-sec]"); if(!b) return;
+    var act = b.getAttribute("data-sec");
+    if(act === "locknow"){ showLock(); return; }
+    if(act === "lockmin"){
+      A.lockMin = parseInt(b.getAttribute("data-m"), 10); saveA(); renderSec();
+      secMsg("Kunci otomatis diatur ke " + A.lockMin + " menit.", true);
+      return;
+    }
+    if(act === "enable"){
+      var pw = $("spNew").value, pw2 = $("spNew2").value, em = $("spEmail").value.trim();
+      if(pw.length < 6){ secMsg("Password minimal 6 karakter.", false); return; }
+      if(pw !== pw2){ secMsg("Ulangi password dengan sama persis.", false); return; }
+      if(em && !/^\S+@\S+\.\S+$/.test(em)){ secMsg("Format email belum benar.", false); return; }
+      secMsg("Memproses...", true);
+      var salt = randSalt(), rsalt = randSalt(), code = makeCode();
+      Promise.all([derive(pw, salt, ITER), derive(normCode(code), rsalt, ITER)]).then(function(h){
+        A = {v:1, iter:ITER, salt:salt, hash:h[0], rsalt:rsalt, rhash:h[1], email:em, fails:0, until:0, lockMin:5};
+        saveA(); renderSec(); showCode(code);
+      }, function(){ secMsg("Gagal mengaktifkan kunci.", false); });
+      return;
+    }
+    // aksi lain butuh password saat ini
+    var cur = $("spCur") ? $("spCur").value : "";
+    if(!cur){ secMsg("Isi password saat ini dulu.", false); return; }
+    secMsg("Memeriksa...", true);
+    verifyPass(cur).then(function(ok){
+      if(!ok){ secMsg("Password saat ini salah.", false); return; }
+      if(act === "disable"){ A = null; saveA(); renderSec(); toast("Kunci dimatikan"); return; }
+      if(act === "change"){
+        var np = $("spNew").value;
+        if(np.length < 6){ secMsg("Password baru minimal 6 karakter.", false); return; }
+        var s2 = randSalt();
+        return derive(np, s2, A.iter || ITER).then(function(h){
+          A.salt = s2; A.hash = h; saveA(); renderSec(); secMsg("Password diganti.", true);
+        });
+      }
+      if(act === "newcode"){
+        var rs = randSalt(), nc = makeCode();
+        return derive(normCode(nc), rs, A.iter || ITER).then(function(h){
+          A.rsalt = rs; A.rhash = h; saveA(); renderSec(); showCode(nc);
+        });
+      }
+    }).catch(function(){ secMsg("Terjadi kesalahan. Coba lagi.", false); });
+  });
+
+  // kunci otomatis setelah ditinggalkan 1 menit
+  var hiddenAt = 0;
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden){ hiddenAt = Date.now(); return; }
+    if(A && hiddenAt && Date.now() - hiddenAt > ((A.lockMin || 5) * 60000) && !document.documentElement.classList.contains("locked")) showLock();
+  });
+  function initLock(){
+    if(A) showLock(); else document.documentElement.classList.remove("locked");
+  }
+
+  // ---- banner kunci ----
+  function updateLockTip(){
+    var show = !A && cryptoOk && storageOk && !S.noLockTip;
+    $("lockTip").style.display = show ? "flex" : "none";
+    $("lockNowBtn").style.display = A ? "" : "none";
+  }
+  $("tipGo").addEventListener("click", function(){ openSettings(true); });
+  $("tipLater").addEventListener("click", function(){ S.noLockTip = true; saveS(); updateLockTip(); });
+  $("lockBtn").addEventListener("click", function(){ openSettings(true); });
+  $("lockNowBtn").addEventListener("click", function(){ if(A) showLock(); });
+
+  // ---- laporan PDF (dibuat langsung di perangkat, tanpa pustaka luar) ----
+  var PDF_K = 72 / 25.4, PDF_W = 210, PDF_H = 297;
+  var HW = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
+  var HWB = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584];
+  function pdfEnc(str){
+    var map = {8211:150, 8212:151, 8226:149, 8230:133, 8216:145, 8217:146, 8220:147, 8221:148, 8364:128, 8722:45}, out = "";
+    str = String(str);
+    for(var i = 0; i < str.length; i++){
+      var c = str.charCodeAt(i);
+      if(map[c] !== undefined) c = map[c];
+      else if(c > 255 || c < 32) c = (c === 9 || c === 10) ? 32 : 63;
+      out += String.fromCharCode(c);
+    }
+    return out;
+  }
+  function pdfEsc(str){ return str.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)"); }
+  function pdfW(str, size, bold){
+    var t = bold ? HWB : HW, w = 0;
+    for(var i = 0; i < str.length; i++){
+      var c = str.charCodeAt(i);
+      w += (c >= 32 && c <= 126) ? t[c - 32] : 556;
+    }
+    return w * size / 1000 / PDF_K;
+  }
+  function pdfFit(str, maxW, size, bold){
+    var s = pdfEnc(str);
+    if(pdfW(s, size, bold) <= maxW) return s;
+    while(s.length > 1 && pdfW(s + "...", size, bold) > maxW) s = s.slice(0, -1);
+    return s.replace(/\s+$/, "") + "...";
+  }
+  function pf(v){ return (Math.round(v * 100) / 100).toString(); }
+  function pc(hex){
+    var n = parseInt(hex.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function(v){ return (v / 255).toFixed(3); }).join(" ");
+  }
+  function PdfDoc(){ this.pages = []; this.ops = null; }
+  PdfDoc.prototype.page = function(){ this.ops = []; this.pages.push(this.ops); return this; };
+  PdfDoc.prototype.rect = function(x, y, w, h, hex){
+    this.ops.push(pc(hex) + " rg " + pf(x * PDF_K) + " " + pf((PDF_H - y - h) * PDF_K) + " " + pf(w * PDF_K) + " " + pf(h * PDF_K) + " re f");
+  };
+  PdfDoc.prototype.rrect = function(x, y, w, h, r, hex){
+    var X = x * PDF_K, Y = (PDF_H - y - h) * PDF_K, W = w * PDF_K, H = h * PDF_K, R = Math.min(r * PDF_K, W / 2, H / 2), c = R * 0.4477;
+    this.ops.push(pc(hex) + " rg " + [
+      pf(X + R) + " " + pf(Y) + " m",
+      pf(X + W - R) + " " + pf(Y) + " l",
+      pf(X + W - c) + " " + pf(Y) + " " + pf(X + W) + " " + pf(Y + c) + " " + pf(X + W) + " " + pf(Y + R) + " c",
+      pf(X + W) + " " + pf(Y + H - R) + " l",
+      pf(X + W) + " " + pf(Y + H - c) + " " + pf(X + W - c) + " " + pf(Y + H) + " " + pf(X + W - R) + " " + pf(Y + H) + " c",
+      pf(X + R) + " " + pf(Y + H) + " l",
+      pf(X + c) + " " + pf(Y + H) + " " + pf(X) + " " + pf(Y + H - c) + " " + pf(X) + " " + pf(Y + H - R) + " c",
+      pf(X) + " " + pf(Y + R) + " l",
+      pf(X) + " " + pf(Y + c) + " " + pf(X + c) + " " + pf(Y) + " " + pf(X + R) + " " + pf(Y) + " c h f"
+    ].join(" "));
+  };
+  PdfDoc.prototype.circle = function(cx, cy, r, hex){
+    var X = cx * PDF_K, Y = (PDF_H - cy) * PDF_K, R = r * PDF_K, k = R * 0.5523;
+    this.ops.push(pc(hex) + " rg " + pf(X + R) + " " + pf(Y) + " m " +
+      pf(X + R) + " " + pf(Y + k) + " " + pf(X + k) + " " + pf(Y + R) + " " + pf(X) + " " + pf(Y + R) + " c " +
+      pf(X - k) + " " + pf(Y + R) + " " + pf(X - R) + " " + pf(Y + k) + " " + pf(X - R) + " " + pf(Y) + " c " +
+      pf(X - R) + " " + pf(Y - k) + " " + pf(X - k) + " " + pf(Y - R) + " " + pf(X) + " " + pf(Y - R) + " c " +
+      pf(X + k) + " " + pf(Y - R) + " " + pf(X + R) + " " + pf(Y - k) + " " + pf(X + R) + " " + pf(Y) + " c f");
+  };
+  PdfDoc.prototype.line = function(x1, y1, x2, y2, hex, w){
+    this.ops.push(pc(hex) + " RG " + pf(w * PDF_K) + " w " + pf(x1 * PDF_K) + " " + pf((PDF_H - y1) * PDF_K) + " m " + pf(x2 * PDF_K) + " " + pf((PDF_H - y2) * PDF_K) + " l S");
+  };
+  PdfDoc.prototype.text = function(x, y, str, size, bold, hex, align){
+    var s = pdfEnc(str), w = pdfW(s, size, bold);
+    if(align === "right") x -= w; else if(align === "center") x -= w / 2;
+    this.ops.push("BT " + pc(hex) + " rg /" + (bold ? "F2" : "F1") + " " + size + " Tf " + pf(x * PDF_K) + " " + pf((PDF_H - y) * PDF_K) + " Td (" + pdfEsc(s) + ") Tj ET");
+  };
+  PdfDoc.prototype.bytes = function(title, author){
+    var n = this.pages.length, out = "%PDF-1.4\n%" + String.fromCharCode(226, 227, 207, 211) + "\n", offs = [], i;
+    function add(num, body){ offs[num] = out.length; out += num + " 0 obj\n" + body + "\nendobj\n"; }
+    var kids = [];
+    for(i = 0; i < n; i++) kids.push((6 + 2 * i) + " 0 R");
+    add(1, "<< /Type /Catalog /Pages 2 0 R >>");
+    add(2, "<< /Type /Pages /Kids [" + kids.join(" ") + "] /Count " + n + " >>");
+    add(3, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+    add(4, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+    add(5, "<< /Title (" + pdfEsc(pdfEnc(title)) + ") /Author (" + pdfEsc(pdfEnc(author)) + ") /Creator (Catatan Keuangan) >>");
+    for(i = 0; i < n; i++){
+      var content = this.pages[i].join("\n");
+      add(6 + 2 * i, "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents " + (7 + 2 * i) + " 0 R >>");
+      add(7 + 2 * i, "<< /Length " + content.length + " >>\nstream\n" + content + "\nendstream");
+    }
+    var total = 6 + 2 * n, xpos = out.length, xref = "xref\n0 " + total + "\n0000000000 65535 f \n";
+    for(i = 1; i < total; i++) xref += ("0000000000" + offs[i]).slice(-10) + " 00000 n \n";
+    out += xref + "trailer\n<< /Size " + total + " /Root 1 0 R /Info 5 0 R >>\nstartxref\n" + xpos + "\n%%EOF";
+    var u8 = new Uint8Array(out.length);
+    for(i = 0; i < out.length; i++) u8[i] = out.charCodeAt(i) & 255;
+    return u8;
+  }
+  function rpp(n){ return "Rp " + nf.format(Math.round(n)); }
+  function rowDate(ds){
+    var p = ds.split("-");
+    return new Date(+p[0], +p[1]-1, +p[2]).toLocaleDateString("id-ID", {weekday:"short", day:"numeric", month:"short"}).replace(",", "");
+  }
+  function anchorDownload(bytes, filename){
+    try{
+      var url = URL.createObjectURL(new Blob([bytes], {type:"application/pdf"}));
+      var a = document.createElement("a");
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 4000);
+      toast("PDF diunduh");
+    }catch(e){ toast("PDF tidak bisa diunduh di tampilan ini"); }
+  }
+  function savePdf(bytes, filename){
+    if(dl){
+      dl.save({filename:filename, data:bytes}).then(function(){ toast("PDF disimpan"); }, function(err){
+        if(err && err.code === "declined"){ toast("Unduhan dibatalkan"); return; }
+        anchorDownload(bytes, filename);
+      });
+      return;
+    }
+    anchorDownload(bytes, filename);
+  }
+  function makeReport(){
+    var r = periodRange(pkey), a = dstr(r[0]), b = dstr(r[1]);
+    var list = items.filter(function(it){ return it.date >= a && it.date <= b; }).sort(function(x, y){
+      return x.date < y.date ? -1 : x.date > y.date ? 1 : (x.id < y.id ? -1 : x.id > y.id ? 1 : 0);
+    });
+    if(!list.length){ toast("Belum ada transaksi di periode ini"); return; }
+    var inc = 0, exp = 0, mOut = Object.create(null), mIn = Object.create(null);
+    list.forEach(function(it){
+      if(typeOf(it) === "in"){ inc += it.amount; mIn[it.cat] = (mIn[it.cat] || 0) + it.amount; }
+      else { exp += it.amount; mOut[it.cat] = (mOut[it.cat] || 0) + it.amount; }
+    });
+    var net = inc - exp, label = rangeLabel(r[0], r[1]);
+    var tn = new Date(); tn = new Date(tn.getFullYear(), tn.getMonth(), tn.getDate());
+    var totalDays = Math.round((r[1] - r[0]) / 864e5) + 1, tdy = todayStr();
+    var elapsed = (tdy >= a && tdy <= b) ? Math.round((tn - r[0]) / 864e5) + 1 : totalDays;
+    var avg = exp / Math.max(elapsed, 1);
+    var topKey = Object.keys(mOut).sort(function(p, q){ return mOut[q] - mOut[p]; })[0];
+
+    var TEAL = "#0F3D3E", AMBER = "#E0A72E", INK = "#13302F", MUTED = "#5F7776", LINE = "#D5E1DE";
+    var GREEN = "#1E7A52", RED = "#C0392B", SOFT = "#EEF4F2", ZEB = "#F4F8F7", WHITE = "#FFFFFF";
+    var L = 12, R2 = 198, W = R2 - L, BOTTOM = 283;
+    var doc = new PdfDoc().page(), y;
+
+    // kepala halaman pertama
+    doc.rect(0, 0, PDF_W, 31, TEAL);
+    doc.rect(0, 31, PDF_W, 1.2, AMBER);
+    doc.text(L, 14, "Laporan Keuangan", 19, true, WHITE);
+    doc.text(L, 22, label, 10.5, false, "#A9C9C5");
+    doc.text(R2, 14, "Dibuat " + fmtDate(tdy), 8.5, false, "#A9C9C5", "right");
+    doc.text(R2, 22, list.length + " transaksi", 8.5, false, "#A9C9C5", "right");
+
+    // kartu ringkasan
+    var cw = (W - 8) / 3, cards = [
+      ["Pemasukan", rpp(inc), GREEN, GREEN],
+      ["Pengeluaran", rpp(exp), net < 0 ? RED : INK, AMBER],
+      ["Sisa periode", (net < 0 ? "-" : "") + rpp(Math.abs(net)), net < 0 ? RED : GREEN, net < 0 ? RED : TEAL]
+    ];
+    cards.forEach(function(c, i){
+      var cx = L + i * (cw + 4);
+      doc.rrect(cx, 37, cw, 18, 2.5, SOFT);
+      doc.rrect(cx, 37, 1.8, 18, 0.9, c[3]);
+      doc.text(cx + 5, 43.5, c[0], 8, false, MUTED);
+      doc.text(cx + 5, 51.5, c[1], 12.5, true, c[2]);
+    });
+    var stat = "Rata-rata pengeluaran per hari " + rpp(avg) + (topKey ? "   |   Terbesar: " + topKey + " (" + rpp(mOut[topKey]) + ")" : "");
+    doc.text(L, 61.5, pdfFit(stat, W, 8.5, false), 8.5, false, MUTED);
+    y = 67;
+
+    function contHead(){
+      doc.rect(0, 0, PDF_W, 10, TEAL);
+      doc.text(L, 6.6, "Laporan Keuangan", 9, true, WHITE);
+      doc.text(R2, 6.6, label, 9, false, "#A9C9C5", "right");
+      y = 15;
+    }
+    function newPage(){ doc.page(); contHead(); }
+
+    function catBlock(title, map, total, type){
+      var keys = Object.keys(map).sort(function(p, q){ return map[q] - map[p]; });
+      if(!keys.length) return;
+      var rows = Math.ceil(keys.length / 2);
+      if(y + 9 + rows * 9.2 > BOTTOM - 22) newPage();
+      doc.text(L, y + 4, title, 10.5, true, INK);
+      doc.line(L, y + 6, R2, y + 6, LINE, 0.3);
+      y += 9;
+      var colW = (W - 8) / 2;
+      keys.forEach(function(k, i){
+        var cx = L + (i % 2) * (colW + 8), cy = y + Math.floor(i / 2) * 9.2;
+        var pct = total ? map[k] / total * 100 : 0, col = catColor(type, k);
+        doc.circle(cx + 1.3, cy + 2.2, 1.3, col);
+        var nm = pdfFit(k, colW - 40, 9, false);
+        doc.text(cx + 4, cy + 3.4, nm, 9, false, INK);
+        doc.text(cx + 4 + pdfW(nm, 9, false) + 1.8, cy + 3.4, Math.round(pct) + "%", 8, false, MUTED);
+        doc.text(cx + colW, cy + 3.4, rpp(map[k]), 9, true, INK, "right");
+        doc.rrect(cx, cy + 5, colW, 1.8, 0.9, "#E3ECEA");
+        doc.rrect(cx, cy + 5, Math.max(1.8, colW * pct / 100), 1.8, 0.9, col);
+      });
+      y += rows * 9.2 + 3;
+    }
+    catBlock("Pengeluaran per kategori", mOut, exp, "out");
+    catBlock("Pemasukan per kategori", mIn, inc, "in");
+
+    // tabel transaksi
+    function tHead(){
+      doc.rect(L, y, W, 6.4, TEAL);
+      doc.text(L + 2, y + 4.5, "Tanggal", 8.5, true, WHITE);
+      doc.text(L + 28, y + 4.5, "Kategori", 8.5, true, WHITE);
+      doc.text(L + 58, y + 4.5, "Catatan", 8.5, true, WHITE);
+      doc.text(R2 - 2, y + 4.5, "Jumlah", 8.5, true, WHITE, "right");
+      y += 6.4;
+    }
+    if(y + 30 > BOTTOM) newPage();
+    doc.text(L, y + 4, "Rincian transaksi", 10.5, true, INK);
+    y += 7;
+    tHead();
+    list.forEach(function(it, idx){
+      if(y + 6 > BOTTOM){ newPage(); tHead(); }
+      var ty = typeOf(it);
+      if(idx % 2 === 1) doc.rect(L, y, W, 6, ZEB);
+      doc.text(L + 2, y + 4.2, rowDate(it.date), 9, false, MUTED);
+      doc.circle(L + 28.6, y + 3, 1.1, catColor(ty, it.cat));
+      doc.text(L + 31, y + 4.2, pdfFit(it.cat, 25, 9, false), 9, false, INK);
+      doc.text(L + 58, y + 4.2, pdfFit(it.note || "-", 96, 9, false), 9, false, it.note ? INK : MUTED);
+      doc.text(R2 - 2, y + 4.2, (ty === "in" ? "+" : "-") + rpp(it.amount), 9, true, ty === "in" ? GREEN : RED, "right");
+      y += 6;
+    });
+
+    // total (satu baris ringkas, hemat kertas)
+    if(y + 12 > BOTTOM) newPage();
+    y += 3;
+    var sw = (W - 8) / 3;
+    [["Total pemasukan", "+" + rpp(inc), GREEN],
+     ["Total pengeluaran", "-" + rpp(exp), RED],
+     ["Sisa periode", (net < 0 ? "-" : "") + rpp(Math.abs(net)), net < 0 ? RED : GREEN]].forEach(function(c, i){
+      var cx = L + i * (sw + 4);
+      doc.rrect(cx, y, sw, 9, 2, SOFT);
+      doc.text(cx + 3, y + 5.8, c[0], 8, false, MUTED);
+      doc.text(cx + sw - 3, y + 5.8, c[1], 9, true, c[2], "right");
+    });
+    y += 9;
+
+    // kaki halaman
+    var total = doc.pages.length;
+    for(var i = 0; i < total; i++){
+      doc.ops = doc.pages[i];
+      doc.line(L, 286, R2, 286, LINE, 0.3);
+      doc.text(L, 291, "Catatan Keuangan  |  Created by Anthox", 8, false, MUTED);
+      doc.text(R2, 291, "Hal " + (i + 1) + " / " + total, 8, false, MUTED, "right");
+    }
+    var bytes = doc.bytes("Laporan Keuangan " + label, "Catatan Keuangan - Anthox");
+    savePdf(bytes, "laporan-keuangan-" + a + "_sd_" + b + ".pdf");
+  }
+  $("pdfBtn").addEventListener("click", makeReport);
+  $("hPdf").addEventListener("click", makeReport);
+
+  var tt;
+  function toast(msg){
+    var t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(tt); tt = setTimeout(function(){ t.classList.remove("show"); }, 1800);
+  }
+
+  initLock();
+  render();
+})();
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
+</body>
+</html>
